@@ -2,9 +2,13 @@ import React, { Component } from 'react'
 import * as THREE from 'three'
 import OrbitControls from '../lib/orbitControls'
 
-class mainView extends Component {
+class planView extends Component {
     constructor(props) {
         super(props)
+
+        this.state = {
+            click: 0
+        }
 
         this.start = this.start.bind(this)
         this.stop = this.stop.bind(this)
@@ -14,8 +18,7 @@ class mainView extends Component {
     }
 
     componentDidMount() {
-        //setup
-        const mainState = this.props.mainState
+        const planState = this.props.planState
         const graph = this.props.graph
         const box = this.props.box
         const startingPoint = this.props.startingPoint
@@ -24,43 +27,43 @@ class mainView extends Component {
         const scene = new THREE.Scene()
         const camera = new THREE.PerspectiveCamera(
             75,
-            mainState.width / mainState.height,
+            planState.width / planState.height,
             0.1,
             1000
         )
-        camera.position.set(0, 0, 0)
 
         const renderer = new THREE.WebGLRenderer()
-        renderer.setSize(mainState.width, mainState.height)
-        renderer.domElement.id = 'canvas'
+        renderer.setSize(planState.width, planState.height)
+        renderer.domElement.id = 'plan'
 
         // sphereElement = []
         // stickerList = []
 
         const controls = new OrbitControls(camera, renderer.domElement)
         controls.enableDamping = true
-        controls.dampingFactor = 0.5
         controls.enableKeys = false
-        controls.enableZoom = false
-        controls.rotateSpeed = 0.5
-        controls.minDistance = 10
-        controls.target = new THREE.Vector3(-10, 0, 0)
+        controls.enableZoom = true
+        controls.minDistance = 1
+        controls.maxDistance = 20
+
+        camera.position.set(
+            graph[startingPoint].pos.x,
+            graph[startingPoint].pos.y + 7,
+            graph[startingPoint].pos.z
+        )
+        camera.lookAt(
+            graph[startingPoint].pos.x,
+            graph[startingPoint].pos.y,
+            graph[startingPoint].pos.z
+        )
+        controls.target.set(
+            graph[startingPoint].pos.x,
+            graph[startingPoint].pos.y,
+            graph[startingPoint].pos.z
+        )
 
         const mouse = new THREE.Vector2()
         const raycaster = new THREE.Raycaster()
-
-        const geometry = new THREE.SphereGeometry(500, 32, 32)
-        const texture = new THREE.TextureLoader().load(startingPoint)
-        texture.wrapS = THREE.RepeatWrapping
-        texture.repeat.x = -1
-        const material = new THREE.MeshBasicMaterial({
-            map: texture,
-            side: THREE.BackSide
-        })
-        const sphere = new THREE.Mesh(geometry, material)
-        sphere.name = startingPoint
-        sphere.floor = 2
-        scene.add(sphere)
 
         this.scene = scene
         this.camera = camera
@@ -73,7 +76,7 @@ class mainView extends Component {
         this.start()
 
         document
-            .getElementById('canvas')
+            .getElementById('plan')
             .addEventListener('mousemove', this.onMouseMove)
     }
 
@@ -99,13 +102,13 @@ class mainView extends Component {
     }
 
     updateComponent() {
-        const aspect = this.props.mainState.width / this.props.mainState.height
+        const aspect = this.props.planState.width / this.props.planState.height
         if (aspect !== this.camera.aspect) {
             this.camera.aspect = aspect
             this.camera.updateProjectionMatrix()
             this.renderer.setSize(
-                this.props.mainState.width,
-                this.props.mainState.height,
+                this.props.planState.width,
+                this.props.planState.height,
                 true
             )
         }
@@ -113,9 +116,9 @@ class mainView extends Component {
     }
 
     onMouseMove(event) {
-        console.log('main mouse')
-        // this.mouse.x = (event.clientX / document.getElementById('canvas').clientWidth) * 2 - 1
-        // this.mouse.y = -(event.clientY / document.getElementById('canvas').clientHeight) * 2 + 1
+        console.log('plan mouse')
+        // this.planMouse.x = (event.clientX / document.getElementById('bottomLeft').clientWidth) * 2 - 1
+        // this.planMouse.y = ((document.body.clientHeight - event.clientY) / document.getElementById('bottomLeft').clientHeight) * 2 - 1
     }
 
     render() {
@@ -129,4 +132,4 @@ class mainView extends Component {
     }
 }
 
-export default mainView
+export default planView
