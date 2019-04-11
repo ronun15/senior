@@ -1,6 +1,13 @@
 import React, { Component } from 'react'
 import * as THREE from 'three'
+import styled from 'styled-components'
+
 import OrbitControls from '../lib/orbitControls'
+
+const FlexDiv = styled.div`
+    display: flex;
+    transition: width 2s, height 2s;
+`
 
 class mainView extends Component {
     constructor(props) {
@@ -113,14 +120,14 @@ class mainView extends Component {
     }
 
     onMouseMove(event) {
-        console.log('main mouse')
+        // console.log('main mouse')
         // this.mouse.x = (event.clientX / document.getElementById('canvas').clientWidth) * 2 - 1
         // this.mouse.y = -(event.clientY / document.getElementById('canvas').clientHeight) * 2 + 1
     }
 
     render() {
         return (
-            <div
+            <FlexDiv
                 ref={mount => {
                     this.mount = mount
                 }}

@@ -1,6 +1,12 @@
 import React, { Component } from 'react'
 import * as THREE from 'three'
+import styled from 'styled-components'
+
 import OrbitControls from '../lib/orbitControls'
+
+const FlexDiv = styled.div`
+    display: flex;
+`
 
 class planView extends Component {
     constructor(props) {
@@ -116,14 +122,14 @@ class planView extends Component {
     }
 
     onMouseMove(event) {
-        console.log('plan mouse')
+        // console.log('plan mouse')
         // this.planMouse.x = (event.clientX / document.getElementById('bottomLeft').clientWidth) * 2 - 1
         // this.planMouse.y = ((document.body.clientHeight - event.clientY) / document.getElementById('bottomLeft').clientHeight) * 2 - 1
     }
 
     render() {
         return (
-            <div
+            <FlexDiv
                 ref={mount => {
                     this.mount = mount
                 }}

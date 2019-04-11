@@ -8,13 +8,14 @@ const OuterDiv = styled.div`
 const AddDiv = styled.div`
     visibility: ${props => (props.addingBox ? 'visible' : 'hidden')};
     opacity: ${props => (props.addingBox ? '1' : '0')};
-    height: 50%;
+    height: ${props => (props.addingBox ? '50%' : '0')};
     overflow-y: scroll;
 `
 
 const MoveDiv = styled.div`
     visibility: ${props => (props.addingBox ? 'visible' : 'hidden')};
     opacity: ${props => (props.addingBox ? '1' : '0')};
+    height: ${props => (props.addingBox ? 'auto' : '0')};
 `
 
 class DevTab extends Component {

@@ -5,10 +5,19 @@ import styled from 'styled-components'
 import MainView from './components/mainView'
 import PlanView from './components/planView'
 import DevTab from './components/devTab'
+import TopTab from './components/topTab'
+import RightTab from './components/rightTab'
 
 const MainDiv = styled.div`
     display: flex;
     flex-direction: row;
+`
+
+const CanvasDiv = styled.div`
+    position: relative;
+    overflow: hidden;
+    width: 80%;
+    height: 100%;
 `
 
 class App extends Component {
@@ -19,16 +28,18 @@ class App extends Component {
             env: 'dev',
             loading: true,
             mainState: {
-                height: 0.8 * document.documentElement.clientHeight,
+                height: document.documentElement.clientHeight,
                 width: 0.8 * document.documentElement.clientWidth
             },
             planState: {
-                height: 0.2 * document.documentElement.clientHeight,
+                show: false,
+                height: 0,
                 width: 0.8 * document.documentElement.clientWidth
             },
             graph: {},
             box: {},
             startingPoint: '360.jpg',
+            websiteLink: 'https://en.wikipedia.org/wiki/Cat',
             controls: {
                 addingPoint: false,
                 deletePoint: false,
@@ -41,6 +52,7 @@ class App extends Component {
         this.getData = this.getData.bind(this)
         this.resizeWindow = this.resizeWindow.bind(this)
         this.addBox = this.addBox.bind(this)
+        this.showPlan = this.showPlan.bind(this)
     }
 
     async componentDidMount() {
@@ -96,9 +108,12 @@ class App extends Component {
         if (this.state.controls.addingBox || this.state.controls.moving) {
             mainStateCopy.height = 0
             planStateCopy.height = document.documentElement.clientHeight
-        } else {
+        } else if (this.state.planState.show) {
             mainStateCopy.height = 0.8 * document.documentElement.clientHeight
             planStateCopy.height = 0.2 * document.documentElement.clientHeight
+        } else {
+            mainStateCopy.height = document.documentElement.clientHeight
+            planStateCopy.height = 0
         }
 
         this.setState({ mainState: mainStateCopy, planState: planStateCopy })
@@ -147,11 +162,19 @@ class App extends Component {
         // }
     }
 
+    showPlan() {
+        const planStateCopy = Object.assign({}, this.state.planState)
+        planStateCopy.show = !this.state.planState.show
+        this.setState({ planState: planStateCopy }, () => {
+            this.resizeWindow()
+        })
+    }
+
     render() {
         if (!this.state.loading) {
             return (
                 <MainDiv controls={this.state.controls}>
-                    <div>
+                    <CanvasDiv>
                         <MainView
                             mainState={this.state.mainState}
                             graph={this.state.graph}
@@ -166,7 +189,12 @@ class App extends Component {
                             startingPoint={this.state.startingPoint}
                             controls={this.state.controls}
                         />
-                    </div>
+                        <TopTab
+                            showPlan={this.showPlan}
+                            websiteLink={this.state.websiteLink}
+                        />
+                        <RightTab />
+                    </CanvasDiv>
                     {this.state.env === 'dev' && (
                         <DevTab
                             controls={this.state.controls}
