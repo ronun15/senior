@@ -2,8 +2,6 @@ import React, { Component } from 'react'
 import * as THREE from 'three'
 import styled from 'styled-components'
 
-import OrbitControls from '../lib/orbitControls'
-
 const FlexDiv = styled.div`
     display: flex;
 `
@@ -15,37 +13,24 @@ class planView extends Component {
         this.state = {
             click: 0
         }
-
-        this.start = this.start.bind(this)
-        this.stop = this.stop.bind(this)
-        this.animate = this.animate.bind(this)
-        this.updateComponent = this.updateComponent.bind(this)
-        this.onMouseMove = this.onMouseMove.bind(this)
     }
 
     componentDidMount() {
-        const planState = this.props.planState
         const graph = this.props.graph
         const box = this.props.box
         const startingPoint = this.props.startingPoint
         const controlsState = this.props.controls
 
-        const scene = new THREE.Scene()
-        const camera = new THREE.PerspectiveCamera(
-            75,
-            planState.width / planState.height,
-            0.1,
-            1000
-        )
+        const camera = this.props.state.camera
 
-        const renderer = new THREE.WebGLRenderer()
-        renderer.setSize(planState.width, planState.height)
+        const renderer = this.props.state.renderer
+        renderer.setSize(this.props.state.width, this.props.state.height)
         renderer.domElement.id = 'plan'
 
         // sphereElement = []
         // stickerList = []
 
-        const controls = new OrbitControls(camera, renderer.domElement)
+        const controls = this.props.state.controls
         controls.enableDamping = true
         controls.enableKeys = false
         controls.enableZoom = true
@@ -68,15 +53,12 @@ class planView extends Component {
             graph[startingPoint].pos.z
         )
 
-        const mouse = new THREE.Vector2()
-        const raycaster = new THREE.Raycaster()
-
-        this.scene = scene
-        this.camera = camera
-        this.renderer = renderer
-        this.controls = controls
-        this.mouse = mouse
-        this.raycaster = raycaster
+        this.scene = this.props.state.scene
+        this.camera = this.props.state.camera
+        this.renderer = this.props.state.renderer
+        this.controls = this.props.state.controls
+        this.mouse = this.props.state.mouse
+        this.raycaster = this.props.state.raycaster
 
         this.mount.appendChild(this.renderer.domElement)
         this.start()
@@ -86,48 +68,58 @@ class planView extends Component {
             .addEventListener('mousemove', this.onMouseMove)
     }
 
-    componentWillUnmount() {
+    componentWillUnmount = () => {
         this.stop()
         this.mount.removeChild(this.renderer.domElement)
     }
 
-    start() {
+    start = () => {
         if (!this.frameId) {
             this.frameId = requestAnimationFrame(this.animate)
         }
     }
 
-    stop() {
+    stop = () => {
         cancelAnimationFrame(this.frameId)
     }
 
-    animate() {
+    animate = () => {
         this.updateComponent()
         this.frameId = window.requestAnimationFrame(this.animate)
         this.renderer.render(this.scene, this.camera)
     }
 
-    updateComponent() {
-        const aspect = this.props.planState.width / this.props.planState.height
+    updateComponent = () => {
+        const aspect = this.props.state.width / this.props.state.height
         if (aspect !== this.camera.aspect) {
             this.camera.aspect = aspect
             this.camera.updateProjectionMatrix()
             this.renderer.setSize(
-                this.props.planState.width,
-                this.props.planState.height,
+                this.props.state.width,
+                this.props.state.height,
                 true
             )
         }
         this.controls.update()
+        if (this.props.controls.moving) {
+            this.controls.maxPolarAngle = Math.PI / 2 - 0.1
+        } else {
+            this.controls.maxPolarAngle = Math.PI
+        }
     }
 
-    onMouseMove(event) {
-        // console.log('plan mouse')
-        // this.planMouse.x = (event.clientX / document.getElementById('bottomLeft').clientWidth) * 2 - 1
-        // this.planMouse.y = ((document.body.clientHeight - event.clientY) / document.getElementById('bottomLeft').clientHeight) * 2 - 1
+    onMouseMov = event => {
+        this.mouse.x =
+            (event.clientX / document.getElementById('plan').clientWidth) * 2 -
+            1
+        this.mouse.y =
+            ((document.body.clientHeight - event.clientY) /
+                document.getElementById('plan').clientHeight) *
+                2 -
+            1
     }
 
-    render() {
+    render = () => {
         return (
             <FlexDiv
                 ref={mount => {

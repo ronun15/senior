@@ -39,20 +39,24 @@ class rightTab extends Component {
         this.state = {
             open: false
         }
-
-        this.open = this.open.bind(this)
     }
 
-    open() {
-        this.setState(state => ({
-            open: !state.open
-        }))
+    open = () => {
+        if (this.props.canOpen) {
+            this.setState(state => ({
+                open: !state.open
+            }))
+        } else {
+            this.setState({
+                open: false
+            })
+        }
     }
 
-    render() {
+    render = () => {
         return (
-            <Right open={this.state.open}>
-                <RightOpener onClick={this.open} />
+            <Right open={this.state.open && this.props.canOpen}>
+                <RightOpener id="rightOpener" onClick={this.open} />
                 <RightButton />
             </Right>
         )

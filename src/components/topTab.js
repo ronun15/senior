@@ -38,25 +38,28 @@ class topTab extends Component {
         this.state = {
             open: false
         }
-
-        this.open = this.open.bind(this)
-        this.openlink = this.openlink.bind(this)
     }
 
-    open() {
-        this.setState(state => ({
-            open: !state.open
-        }))
+    open = () => {
+        if (this.props.canOpen) {
+            this.setState(state => ({
+                open: !state.open
+            }))
+        } else {
+            this.setState({
+                open: false
+            })
+        }
     }
 
-    openlink() {
+    openlink = () => {
         window.open(this.props.websiteLink)
     }
 
-    render() {
+    render = () => {
         return (
-            <Top open={this.state.open}>
-                <TopOpener onClick={this.open} />
+            <Top open={this.state.open && this.props.canOpen}>
+                <TopOpener id="topOpener" onClick={this.open} />
                 <TopButton>
                     <StyledInput
                         type="image"
@@ -64,12 +67,14 @@ class topTab extends Component {
                         src="./information.png"
                         onClick={this.openlink}
                     />
-                    <StyledInput
-                        type="image"
-                        alt="Google maps"
-                        src="./gmap.png"
-                        onClick=""
-                    />
+                    <div>
+                        <StyledInput
+                            type="image"
+                            alt="Google maps"
+                            src="./gmap.png"
+                            onClick={null}
+                        />
+                    </div>
                     <div id="map" />
                     <StyledInput
                         type="image"
