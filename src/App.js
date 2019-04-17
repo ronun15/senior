@@ -34,47 +34,21 @@ class App extends Component {
             loading: true,
             mainState: {
                 height: document.documentElement.clientHeight,
-                width: 0.8 * document.documentElement.clientWidth,
-                scene: new THREE.Scene(),
-                camera: new THREE.PerspectiveCamera(
-                    75,
-                    (0.8 * document.documentElement.clientWidth) /
-                        document.documentElement.clientHeight,
-                    0.1,
-                    1000
-                ),
-                renderer: new THREE.WebGLRenderer(),
-                controls: null,
-                mouse: new THREE.Vector2(),
-                raycaster: new THREE.Raycaster()
+                width: 0.8 * document.documentElement.clientWidth
             },
             planState: {
                 show: false,
                 height: 0,
-                width: 0.8 * document.documentElement.clientWidth,
-                scene: new THREE.Scene(),
-                camera: new THREE.PerspectiveCamera(
-                    75,
-                    (0.8 * document.documentElement.clientWidth) / 0,
-                    0.1,
-                    1000
-                ),
-                renderer: new THREE.WebGLRenderer(),
-                controls: null,
-                mouse: new THREE.Vector2(),
-                raycaster: new THREE.Raycaster()
+                width: 0.8 * document.documentElement.clientWidth
             },
             graph: {},
             box: {},
             currentSphere: null,
-            focusedObject: null,
             controls: {
                 addingPoint: false,
                 deletePoint: false,
                 addingBox: false,
-                moving: false,
-                hold: false,
-                click: 0
+                moving: false
             },
             stickerList: [],
             startingPoint: null,
@@ -85,23 +59,56 @@ class App extends Component {
     componentDidMount = async () => {
         const data = await this.getData()
         this.setState({ graph: data.graph, box: data.box })
-        const mainStateCopy = Object.assign({}, this.state.mainState)
-        mainStateCopy.controls = new OrbitControls(
-            this.state.mainState.camera,
-            this.state.mainState.renderer.domElement
+        const mainScene = new THREE.Scene()
+        const mainCamera = new THREE.PerspectiveCamera(
+            75,
+            this.state.mainState.width / this.state.mainState.height,
+            0.1,
+            1000
         )
-        const planStateCopy = Object.assign({}, this.state.planState)
-        planStateCopy.controls = new OrbitControls(
-            this.state.planState.camera,
-            this.state.planState.renderer.domElement
+        const mainRenderer = new THREE.WebGLRenderer()
+        const mainControls = new OrbitControls(
+            mainCamera,
+            mainRenderer.domElement
         )
+        const mainMouse = new THREE.Vector2()
+
+        const planScene = new THREE.Scene()
+        const planCamera = new THREE.PerspectiveCamera(
+            75,
+            this.state.planState.width / this.state.planState.height,
+            0.1,
+            1000
+        )
+        const planRenderer = new THREE.WebGLRenderer()
+        const planControls = new OrbitControls(
+            planCamera,
+            planRenderer.domElement
+        )
+        const planMouse = new THREE.Vector2()
+
+        const raycaster = new THREE.Raycaster()
+
+        this.mainScene = mainScene
+        this.mainCamera = mainCamera
+        this.mainRenderer = mainRenderer
+        this.mainControls = mainControls
+        this.mainMouse = mainMouse
+        this.planScene = planScene
+        this.planCamera = planCamera
+        this.planRenderer = planRenderer
+        this.planControls = planControls
+        this.planMouse = planMouse
+        this.raycaster = raycaster
+        this.hold = false
+        this.click = 0
+        this.focusedObject = null
+
         window.addEventListener('resize', this.resizeWindow)
         window.addEventListener('mousemove', this.onMouseMove)
         this.start()
         await this.setState({
-            loading: false,
-            mainState: mainStateCopy,
-            planState: planStateCopy
+            loading: false
         })
     }
 
@@ -116,7 +123,8 @@ class App extends Component {
     }
 
     animate = () => {
-        if (this.state.controls.moving && this.state.controls.hold) {
+        console.log('animate')
+        if (this.state.controls.moving && this.hold) {
             console.log(`setboxpos`)
             this.setBoxPosition()
         }
@@ -154,44 +162,45 @@ class App extends Component {
     }
 
     getData = async () => {
-        return {
-            graph: {
-                '360': {
-                    pos: new THREE.Vector3(1.38, 2, -0.84),
-                    floor: 1,
-                    edge: [],
-                    sticker: [],
-                    boxName: '360',
-                    path: './360.jpg'
-                },
-                '3602': {
-                    pos: new THREE.Vector3(3.5, 2, 0.5),
-                    floor: 1,
-                    edge: [],
-                    sticker: [],
-                    boxName: '3602',
-                    path: './3602.png'
-                },
-                '3603': {
-                    pos: new THREE.Vector3(3.5, 4, 0.5),
-                    floor: 2,
-                    edge: [],
-                    sticker: [],
-                    boxName: '3603',
-                    path: './3603.png'
-                },
-                '3604': {
-                    pos: new THREE.Vector3(0.5, 0, 0.5),
-                    floor: 0,
-                    edge: [],
-                    sticker: [],
-                    boxName: '3604',
-                    path: './3604.png'
-                }
-            },
-            box: {},
-            startingPoint: '360'
-        }
+        // return {
+        //     graph: {
+        //         '360': {
+        //             pos: new THREE.Vector3(1.38, 2, -0.84),
+        //             floor: 1,
+        //             edge: [],
+        //             sticker: [],
+        //             boxName: '360',
+        //             path: './360.jpg'
+        //         },
+        //         '3602': {
+        //             pos: new THREE.Vector3(3.5, 2, 0.5),
+        //             floor: 1,
+        //             edge: [],
+        //             sticker: [],
+        //             boxName: '3602',
+        //             path: './3602.png'
+        //         },
+        //         '3603': {
+        //             pos: new THREE.Vector3(3.5, 4, 0.5),
+        //             floor: 2,
+        //             edge: [],
+        //             sticker: [],
+        //             boxName: '3603',
+        //             path: './3603.png'
+        //         },
+        //         '3604': {
+        //             pos: new THREE.Vector3(0.5, 0, 0.5),
+        //             floor: 0,
+        //             edge: [],
+        //             sticker: [],
+        //             boxName: '3604',
+        //             path: './3604.png'
+        //         }
+        //     },
+        //     box: {},
+        //     startingPoint: '360'
+        // }
+        return { graph: {}, box: {} }
     }
 
     resizeWindow = () => {
@@ -216,25 +225,22 @@ class App extends Component {
     }
 
     onMouseMove = event => {
-        const mainStateCopy = Object.assign({}, this.state.mainState)
-        const planStateCopy = Object.assign({}, this.state.planState)
-        mainStateCopy.mouse.x =
+        this.mainMouse.x =
             (event.clientX / document.getElementById('canvas').clientWidth) *
                 2 -
             1
-        mainStateCopy.mouse.y =
+        this.mainMouse.y =
             -(event.clientY / document.getElementById('canvas').clientHeight) *
                 2 +
             1
-        planStateCopy.mouse.x =
+        this.planMouse.x =
             (event.clientX / document.getElementById('plan').clientWidth) * 2 -
             1
-        planStateCopy.mouse.y =
+        this.planMouse.y =
             ((document.body.clientHeight - event.clientY) /
                 document.getElementById('plan').clientHeight) *
                 2 -
             1
-        this.setState({ mainState: mainStateCopy, planState: planStateCopy })
     }
 
     onCanvasMouseDown = () => {
@@ -250,43 +256,26 @@ class App extends Component {
     }
 
     onPlanMouseDown = () => {
-        if (!this.state.controls.hold) {
+        if (!this.hold) {
             if (!this.state.controls.moving) {
                 this.raycastPlan(false)
             } else {
-                const controlsCopy = Object.assign({}, this.state.controls)
-                controlsCopy.click++
-                this.setState({ controls: controlsCopy })
+                this.click++
                 setTimeout(() => {
-                    const controlsCopy = Object.assign({}, this.state.controls)
-                    const planStateCopy = Object.assign(
-                        {},
-                        this.state.planState
-                    )
-                    if (this.state.controls.click > 1) {
-                        controlsCopy.hold = true
-                        planStateCopy.controls.enabled = false
+                    if (this.click > 1) {
+                        this.hold = true
+                        this.planControls.enabled = false
                     }
-                    controlsCopy.click = 0
-                    this.setState({
-                        controls: controlsCopy,
-                        planState: planStateCopy
-                    })
+                    this.click = 0
                 }, 500)
             }
         }
     }
 
     onPlanMouseUp = () => {
-        const controlsCopy = Object.assign({}, this.state.controls)
-        const planStateCopy = Object.assign({}, this.state.planState)
-        controlsCopy.hold = false
-        planStateCopy.controls.enabled = true
-        this.setState({
-            controls: controlsCopy,
-            planState: planStateCopy,
-            focusedObject: null
-        })
+        this.hold = false
+        this.planControls.enabled = true
+        this.focusedObject = null
     }
 
     onPlanDoubleClick = () => {
@@ -300,16 +289,13 @@ class App extends Component {
         const boxCopy = Object.assign({}, this.state.box)
         const controlsCopy = Object.assign({}, this.state.controls)
 
-        this.state.mainState.raycaster.setFromCamera(
-            this.state.mainState.mouse,
-            this.state.mainState.camera
-        )
-        const intersects = this.state.mainState.raycaster.intersectObjects(
-            this.state.mainState.scene.children
+        this.raycaster.setFromCamera(this.mainMouse, this.mainCamera)
+        const intersects = this.raycaster.intersectObjects(
+            this.mainScene.children
         )
         if (intersects.length > 0 && intersects[0].object.name === 'arrow') {
             if (this.state.controls.deletePoint) {
-                this.state.mainState.scene.remove(intersects[0].object)
+                this.mainScene.remove(intersects[0].object)
                 const path = intersects[0].object.delPath.path
                 const pos = boxCopy[intersects[0].object.floor][
                     intersects[0].object.delPath.box
@@ -342,12 +328,9 @@ class App extends Component {
         const boxCopy = Object.assign({}, this.state.box)
         const controlsCopy = Object.assign({}, this.state.controls)
 
-        this.state.planState.raycaster.setFromCamera(
-            this.state.planState.mouse,
-            this.state.planState.camera
-        )
-        const intersects = this.state.planState.raycaster.intersectObjects(
-            this.state.planState.scene.children
+        this.raycaster.setFromCamera(this.planMouse, this.planCamera)
+        const intersects = this.raycaster.intersectObjects(
+            this.planScene.children
         )
         if (intersects.length > 0) {
             const pathName = document.getElementById('path').value
@@ -424,7 +407,7 @@ class App extends Component {
                     }
                 }
 
-                this.state.planState.scene.add(arrow)
+                this.planScene.add(arrow)
                 graphCopy[this.state.currentSphere.name].edge.push(arrow)
                 controlsCopy.addingPoint = false
             } else if (this.state.currentSphere && doubleClick) {
@@ -478,7 +461,7 @@ class App extends Component {
                 const sphere = new THREE.Mesh(geometry, material)
                 sphere.name = name
                 sphere.floor = intersects[0].object.floor
-                this.state.mainState.scene.add(sphere)
+                this.mainScene.add(sphere)
 
                 graphCopy[name] = {
                     pos: new THREE.Vector3(
@@ -496,17 +479,17 @@ class App extends Component {
                     intersects[0].object.name
                 ].point.push(name)
 
-                this.state.planState.camera.position.set(
+                this.planCamera.position.set(
                     graphCopy[name].pos.x,
                     graphCopy[name].pos.y + 7,
                     graphCopy[name].pos.z
                 )
-                this.state.planState.camera.lookAt(
+                this.planCamera.lookAt(
                     graphCopy[name].pos.x,
                     graphCopy[name].pos.y,
                     graphCopy[name].pos.z
                 )
-                this.state.planState.controls.target.set(
+                this.planControls.target.set(
                     graphCopy[name].pos.x,
                     graphCopy[name].pos.y,
                     graphCopy[name].pos.z
@@ -525,16 +508,14 @@ class App extends Component {
 
     changeScene = (path, floor) => {
         const currentSphereCopy = Object.assign({}, this.state.currentSphere)
-        const planStateCopy = Object.assign({}, this.state.planState)
-        const mainStateCopy = Object.assign({}, this.state.mainState)
         let temp = []
-        for (const obj of this.state.mainState.scene.children) {
+        for (const obj of this.mainScene.children) {
             if (obj.name === 'arrow' || obj.name === 'sticker') {
                 temp.push(obj)
             }
         }
         for (const item of temp) {
-            this.state.mainState.scene.remove(item)
+            this.mainScene.remove(item)
         }
         const texture = new THREE.TextureLoader().load(
             this.state.graph[path].path
@@ -545,38 +526,36 @@ class App extends Component {
         currentSphereCopy.name = path
         currentSphereCopy.floor = floor
         for (let arrow of this.state.graph[currentSphereCopy.name].edge) {
-            this.state.mainState.scene.add(arrow)
+            this.mainScene.add(arrow)
         }
         for (let sticker of this.state.graph[currentSphereCopy.name].sticker) {
-            this.state.mainState.scene.add(sticker)
+            this.mainScene.add(sticker)
         }
 
-        planStateCopy.camera.position.set(
+        this.planCamera.position.set(
             this.state.graph[path].pos.x,
             this.state.graph[path].pos.y + 7,
             this.state.graph[path].pos.z
         )
-        planStateCopy.camera.lookAt(
+        this.planCamera.lookAt(
             this.state.graph[path].pos.x,
             this.state.graph[path].pos.y,
             this.state.graph[path].pos.z
         )
-        planStateCopy.controls.target.set(
+        this.planControls.target.set(
             this.state.graph[path].pos.x,
             this.state.graph[path].pos.y,
             this.state.graph[path].pos.z
         )
-        planStateCopy.controls.update()
+        this.planControls.update()
 
-        mainStateCopy.camera.position.set(0, 0, 0)
-        mainStateCopy.camera.lookAt(-10, 0, 0)
-        mainStateCopy.controls.target.set(-10, 0, 0)
-        mainStateCopy.controls.update()
+        this.mainCamera.position.set(0, 0, 0)
+        this.mainCamera.lookAt(-10, 0, 0)
+        this.mainControls.target.set(-10, 0, 0)
+        this.mainControls.update()
 
         this.setState({
-            currentSphere: currentSphereCopy,
-            planState: planStateCopy,
-            mainState: mainStateCopy
+            currentSphere: currentSphereCopy
         })
     }
 
@@ -599,9 +578,9 @@ class App extends Component {
                     ? document.getElementById('boxName').value
                     : ''
 
-            for (const obj of this.state.planState.scene.children) {
-                if (obj.name === name || obj.name === '') {
-                    this.state.planState.scene.remove(obj)
+            for (const obj of this.planScene.children) {
+                if (obj.visible) {
+                    this.planScene.remove(obj)
                 }
             }
         }
@@ -656,9 +635,10 @@ class App extends Component {
                 document.getElementById('boxName').value !== ''
                     ? document.getElementById('boxName').value
                     : ''
-            for (const obj of this.state.planState.scene.children) {
-                if (obj.name === name || obj.name === '') {
-                    this.state.planState.scene.remove(obj)
+            for (const obj of this.planScene.children) {
+                console.log(this.planScene.children)
+                if (obj.visible) {
+                    this.planScene.remove(obj)
                 }
             }
             const side = [
@@ -685,7 +665,7 @@ class App extends Component {
             const cube = new THREE.Mesh(geometry, material)
             cube.position.set(0, y / 2, 0)
             cube.name = name
-            this.state.planState.scene.add(cube)
+            this.planScene.add(cube)
         }
     }
 
@@ -707,7 +687,7 @@ class App extends Component {
                     transparent: true
                 })
                 const plane = new THREE.Mesh(geometry, material)
-                this.state.planState.scene.add(plane)
+                this.planScene.add(plane)
                 plane.name = 'invisiblePlane'
                 plane.position.set(0, 0, 0)
                 plane.floor = -1
@@ -718,28 +698,28 @@ class App extends Component {
                         this.state.currentSphere &&
                         path === this.state.currentSphere.name
                     ) {
-                        this.state.planState.camera.position.set(
+                        this.planCamera.position.set(
                             this.state.graph[path].pos.x,
                             this.state.graph[path].pos.y + 10,
                             this.state.graph[path].pos.z
                         )
-                        this.state.planState.camera.lookAt(
+                        this.planCamera.lookAt(
                             this.state.graph[path].pos.x,
                             this.state.graph[path].pos.y,
                             this.state.graph[path].pos.z
                         )
-                        this.state.planState.controls.target.set(
+                        this.planControls.target.set(
                             this.state.graph[path].pos.x,
                             this.state.graph[path].pos.y,
                             this.state.graph[path].pos.z
                         )
-                        this.state.planState.controls.update()
+                        this.planControls.update()
                         break
                     } else {
-                        this.state.planState.camera.position.set(0, 10, 0)
-                        this.state.planState.camera.lookAt(0, 0, 0)
-                        this.state.planState.controls.target.set(0, 0, 0)
-                        this.state.planState.controls.update()
+                        this.planCamera.position.set(0, 10, 0)
+                        this.planCamera.lookAt(0, 0, 0)
+                        this.planControls.target.set(0, 0, 0)
+                        this.planControls.update()
                     }
                 }
 
@@ -763,7 +743,7 @@ class App extends Component {
                     }
                 }
 
-                for (const obj of this.state.planState.scene.children) {
+                for (const obj of this.planScene.children) {
                     if (obj.name === name) {
                         if (left === Number.MAX_SAFE_INTEGER) {
                             left = 0
@@ -796,9 +776,9 @@ class App extends Component {
             } else {
                 controlsCopy.moving = false
 
-                for (let obj of this.state.planState.scene.children) {
+                for (let obj of this.planScene.children) {
                     if (obj.name === 'invisiblePlane') {
-                        this.state.planState.scene.remove(obj)
+                        this.planScene.remove(obj)
                     }
                 }
 
@@ -823,28 +803,28 @@ class App extends Component {
                         this.state.currentSphere &&
                         path === this.state.currentSphere.name
                     ) {
-                        this.state.planState.camera.position.set(
+                        this.planCamera.position.set(
                             this.state.graph[path].pos.x,
                             this.state.graph[path].pos.y + 7,
                             this.state.graph[path].pos.z
                         )
-                        this.state.planState.camera.lookAt(
+                        this.planCamera.lookAt(
                             this.state.graph[path].pos.x,
                             this.state.graph[path].pos.y,
                             this.state.graph[path].pos.z
                         )
-                        this.state.planState.controls.target.set(
+                        this.planControls.target.set(
                             this.state.graph[path].pos.x,
                             this.state.graph[path].pos.y,
                             this.state.graph[path].pos.z
                         )
-                        this.state.planState.controls.update()
+                        this.planControls.update()
                         break
                     } else {
-                        this.state.planState.camera.position.set(0, 10, 0)
-                        this.state.planState.camera.lookAt(0, 0, 0)
-                        this.state.planState.controls.target.set(0, 0, 0)
-                        this.state.planState.controls.update()
+                        this.planCamera.position.set(0, 10, 0)
+                        this.planCamera.lookAt(0, 0, 0)
+                        this.planControls.target.set(0, 0, 0)
+                        this.planControls.update()
                     }
                 }
                 this.setState(
@@ -859,45 +839,36 @@ class App extends Component {
     }
 
     setBoxPosition = () => {
-        // TO TEST
-        this.state.planState.raycaster.setFromCamera(
-            this.state.planState.mouse,
-            this.state.planState.camera
-        )
-        let intersects = this.state.planState.raycaster.intersectObjects(
-            this.state.planState.scene.children
+        this.raycaster.setFromCamera(this.planMouse, this.planCamera)
+        let intersects = this.raycaster.intersectObjects(
+            this.planScene.children
         )
         if (intersects.length > 0) {
             if (
-                !this.state.focusedObject &&
+                !this.focusedObject &&
                 intersects[0].object.name !== 'invisiblePlane'
             ) {
-                const focusedObjectCopy = Object.assign(
-                    {},
-                    intersects[0].object
-                )
-                console.log(`hihihi`)
-                if (focusedObjectCopy) {
+                this.focusedObject = intersects[0].object
+                if (this.focusedObject) {
                     let targetPos
 
-                    if (intersects[0].object.name === focusedObjectCopy.name) {
+                    if (intersects[0].object.name === this.focusedObject.name) {
                         targetPos = intersects[1].point
                     } else {
                         targetPos = intersects[0].point
                     }
 
                     targetPos.y +=
-                        focusedObjectCopy.geometry.parameters.height / 2 +
+                        this.focusedObject.geometry.parameters.height / 2 +
                         0.0000000001
 
                     const relativePos = targetPos
                         .clone()
-                        .sub(focusedObjectCopy.position)
+                        .sub(this.focusedObject.position)
 
-                    console.log(focusedObjectCopy)
-                    const boundingBox = this.state.box[focusedObjectCopy.floor][
-                        focusedObjectCopy.name
-                    ].boundingBox
+                    const boundingBox = this.state.box[
+                        this.focusedObject.floor
+                    ][this.focusedObject.name].boundingBox
                         .clone()
                         .translate(relativePos)
 
@@ -906,7 +877,7 @@ class App extends Component {
                         for (const room in this.state.box[floor]) {
                             if (
                                 this.state.box[floor][room].cubeObject.name !==
-                                    focusedObjectCopy.name &&
+                                    this.focusedObject.name &&
                                 boundingBox.intersectsBox(
                                     this.state.box[floor][room].boundingBox
                                 )
@@ -921,20 +892,21 @@ class App extends Component {
                     }
 
                     if (overlap) {
-                        targetPos.copy(focusedObjectCopy.position)
+                        targetPos.copy(this.focusedObject.position)
                     } else {
                         if (
-                            intersects[0].object.name === focusedObjectCopy.name
+                            intersects[0].object.name ===
+                            this.focusedObject.name
                         ) {
-                            focusedObjectCopy.floor =
+                            this.focusedObject.floor =
                                 intersects[1].object.floor + 1
                         } else {
-                            focusedObjectCopy.floor =
+                            this.focusedObject.floor =
                                 intersects[0].object.floor + 1
                         }
                     }
 
-                    focusedObjectCopy.position.copy(targetPos)
+                    this.focusedObject.position.copy(targetPos)
 
                     let tempBoxData = null
                     const boxCopy = Object.assign({}, this.state.box)
@@ -943,19 +915,18 @@ class App extends Component {
                         for (const room in this.state.box[floor]) {
                             if (
                                 this.state.box[floor][room].cubeObject.name ===
-                                focusedObjectCopy.name
+                                this.focusedObject.name
                             ) {
                                 if (
                                     this.state.currentSphere &&
-                                    focusedObjectCopy.name ===
+                                    this.focusedObject.name ===
                                         this.state.currentSphere.name
                                 ) {
                                     const currentSphereCopy = Object.assign(
                                         {},
                                         this.state.currentSphere
                                     )
-                                    currentSphereCopy.floor =
-                                        focusedObjectCopy.floor
+                                    currentSphereCopy.floor = this.focusedObject.floor
                                     this.setState({
                                         currentState: currentSphereCopy
                                     })
@@ -970,11 +941,15 @@ class App extends Component {
                         }
                     }
 
-                    if (this.state.box[focusedObjectCopy.floor] === undefined) {
-                        boxCopy[focusedObjectCopy.floor] = {}
+                    if (
+                        this.state.box[this.focusedObject.floor] === undefined
+                    ) {
+                        boxCopy[this.focusedObject.floor] = {}
                     }
 
-                    boxCopy[focusedObjectCopy.floor][focusedObjectCopy.name] = {
+                    boxCopy[this.focusedObject.floor][
+                        this.focusedObject.name
+                    ] = {
                         cubeObject: tempBoxData.cubeObject,
                         point: tempBoxData.point,
                         boundingBox: new THREE.Box3().setFromObject(
@@ -987,13 +962,13 @@ class App extends Component {
                             graphCopy[name].pos.x += relativePos.x
                             graphCopy[name].pos.y += relativePos.y
                             graphCopy[name].pos.z += relativePos.z
-                            graphCopy[name].floor = focusedObjectCopy.floor
+                            graphCopy[name].floor = this.focusedObject.floor
                         }
                     }
 
                     for (const path in graphCopy) {
-                        if (path.boxName === focusedObjectCopy.name) {
-                            path.floor = focusedObjectCopy.floor
+                        if (path.boxName === this.focusedObject.name) {
+                            path.floor = this.focusedObject.floor
                         }
                     }
 
@@ -1002,7 +977,6 @@ class App extends Component {
                         box: boxCopy
                     })
                 }
-                this.setState({ focusedObject: focusedObjectCopy })
             }
         }
     }
@@ -1019,7 +993,7 @@ class App extends Component {
         } else if (!this.state.controls.addingBox && this.state.currentSphere) {
             for (const floor in boxCopy) {
                 if (
-                    this.state.planState.camera.rotation.x < -Math.PI / 6 &&
+                    this.planCamera.rotation.x < -Math.PI / 6 &&
                     floor > this.state.currentSphere.floor
                 ) {
                     //above
@@ -1027,7 +1001,7 @@ class App extends Component {
                         boxCopy[floor][room].cubeObject.visible = false
                     }
                 } else if (
-                    this.state.planState.camera.rotation.x > Math.PI / 6 &&
+                    this.planCamera.rotation.x > Math.PI / 6 &&
                     floor < this.state.currentSphere.floor
                 ) {
                     //below
@@ -1047,12 +1021,9 @@ class App extends Component {
     }
 
     addSticker = () => {
-        this.state.mainState.raycaster.setFromCamera(
-            this.state.mainState.mouse,
-            this.state.mainState.camera
-        )
-        const intersects = this.state.mainState.raycaster.intersectObjects(
-            this.state.mainState.scene.children
+        this.raycaster.setFromCamera(this.mainMouse, this.mainCamera)
+        const intersects = this.raycaster.intersectObjects(
+            this.mainScene.children
         )
         const normal = intersects[intersects.length - 1].point.normalize()
         const xzPlane = new THREE.Vector3(normal.x, 0, normal.z).normalize()
@@ -1080,7 +1051,7 @@ class App extends Component {
         sticker.rotateY(Math.PI / 2 + xzAngle)
         sticker.rotateX(xyAngle)
         sticker.name = 'sticker'
-        this.state.mainState.scene.add(sticker)
+        this.mainScene.add(sticker)
 
         const graphCopy = Object.assign({}, this.state.graph)
         graphCopy[this.state.currentSphere.name].sticker.push(sticker)
@@ -1105,6 +1076,12 @@ class App extends Component {
                 <MainDiv controls={this.state.controls}>
                     <CanvasDiv>
                         <MainView
+                            scene={this.mainScene}
+                            camera={this.mainCamera}
+                            renderer={this.mainRenderer}
+                            orbitControls={this.mainControls}
+                            mouse={this.mainMouse}
+                            raycaster={this.raycaster}
                             state={this.state.mainState}
                             graph={this.state.graph}
                             box={this.state.box}
@@ -1114,6 +1091,12 @@ class App extends Component {
                             doubleClick={this.onCanvasDoubleClick}
                         />
                         <PlanView
+                            scene={this.planScene}
+                            camera={this.planCamera}
+                            renderer={this.planRenderer}
+                            orbitControls={this.planControls}
+                            mouse={this.planMouse}
+                            raycaster={this.raycaster}
                             state={this.state.planState}
                             graph={this.state.graph}
                             box={this.state.box}

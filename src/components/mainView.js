@@ -13,17 +13,17 @@ class mainView extends Component {
         const graph = this.props.graph
         const startingPoint = this.props.startingPoint
 
-        const scene = this.props.state.scene
-        const camera = this.props.state.camera
+        const scene = this.props.scene
+        const camera = this.props.camera
         camera.position.set(0, 0, 0)
 
-        const renderer = this.props.state.renderer
+        const renderer = this.props.renderer
         renderer.setSize(this.props.state.width, this.props.state.height)
         renderer.domElement.id = 'canvas'
 
         // stickerList = []
 
-        const controls = this.props.state.controls
+        const controls = this.props.orbitControls
         controls.enableDamping = true
         controls.dampingFactor = 0.5
         controls.enableKeys = false
@@ -49,12 +49,12 @@ class mainView extends Component {
             scene.add(sphere)
         }
 
-        this.scene = this.props.state.scene
-        this.camera = this.props.state.camera
-        this.renderer = this.props.state.renderer
-        this.controls = this.props.state.controls
-        this.mouse = this.props.state.mouse
-        this.raycaster = this.props.state.raycaster
+        this.scene = this.props.scene
+        this.camera = this.props.camera
+        this.renderer = this.props.renderer
+        this.controls = this.props.orbitControls
+        this.mouse = this.props.mouse
+        this.raycaster = this.props.raycaster
 
         this.mount.appendChild(this.renderer.domElement)
         this.start()

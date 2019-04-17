@@ -7,28 +7,20 @@ const FlexDiv = styled.div`
 `
 
 class planView extends Component {
-    constructor(props) {
-        super(props)
-
-        this.state = {
-            click: 0
-        }
-    }
-
     componentDidMount() {
         const graph = this.props.graph
         const startingPoint = this.props.startingPoint
 
-        const camera = this.props.state.camera
+        const camera = this.props.camera
 
-        const renderer = this.props.state.renderer
+        const renderer = this.props.renderer
         renderer.setSize(this.props.state.width, this.props.state.height)
         renderer.domElement.id = 'plan'
 
         // sphereElement = []
         // stickerList = []
 
-        const controls = this.props.state.controls
+        const controls = this.props.orbitControls
         controls.enableDamping = true
         controls.enableKeys = false
         controls.enableZoom = true
@@ -57,12 +49,12 @@ class planView extends Component {
             controls.target.set(0, 0, 0)
         }
 
-        this.scene = this.props.state.scene
-        this.camera = this.props.state.camera
-        this.renderer = this.props.state.renderer
-        this.controls = this.props.state.controls
-        this.mouse = this.props.state.mouse
-        this.raycaster = this.props.state.raycaster
+        this.scene = this.props.scene
+        this.camera = this.props.camera
+        this.renderer = this.props.renderer
+        this.controls = this.props.orbitControls
+        this.mouse = this.props.mouse
+        this.raycaster = this.props.raycaster
 
         this.mount.appendChild(this.renderer.domElement)
         this.start()
