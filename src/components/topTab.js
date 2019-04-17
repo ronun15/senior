@@ -75,7 +75,6 @@ class topTab extends Component {
                             onClick={null}
                         />
                     </div>
-                    <div id="map" />
                     <StyledInput
                         type="image"
                         alt="Floor Plan"

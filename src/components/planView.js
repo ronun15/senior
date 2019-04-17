@@ -17,9 +17,7 @@ class planView extends Component {
 
     componentDidMount() {
         const graph = this.props.graph
-        const box = this.props.box
         const startingPoint = this.props.startingPoint
-        const controlsState = this.props.controls
 
         const camera = this.props.state.camera
 
@@ -37,21 +35,27 @@ class planView extends Component {
         controls.minDistance = 1
         controls.maxDistance = 20
 
-        camera.position.set(
-            graph[startingPoint].pos.x,
-            graph[startingPoint].pos.y + 7,
-            graph[startingPoint].pos.z
-        )
-        camera.lookAt(
-            graph[startingPoint].pos.x,
-            graph[startingPoint].pos.y,
-            graph[startingPoint].pos.z
-        )
-        controls.target.set(
-            graph[startingPoint].pos.x,
-            graph[startingPoint].pos.y,
-            graph[startingPoint].pos.z
-        )
+        if (startingPoint) {
+            camera.position.set(
+                graph[startingPoint].pos.x,
+                graph[startingPoint].pos.y + 7,
+                graph[startingPoint].pos.z
+            )
+            camera.lookAt(
+                graph[startingPoint].pos.x,
+                graph[startingPoint].pos.y,
+                graph[startingPoint].pos.z
+            )
+            controls.target.set(
+                graph[startingPoint].pos.x,
+                graph[startingPoint].pos.y,
+                graph[startingPoint].pos.z
+            )
+        } else {
+            camera.position.set(0, 7, 0)
+            camera.lookAt(0, 0, 0)
+            controls.target.set(0, 0, 0)
+        }
 
         this.scene = this.props.state.scene
         this.camera = this.props.state.camera
@@ -62,10 +66,6 @@ class planView extends Component {
 
         this.mount.appendChild(this.renderer.domElement)
         this.start()
-
-        document
-            .getElementById('plan')
-            .addEventListener('mousemove', this.onMouseMove)
     }
 
     componentWillUnmount = () => {
@@ -108,23 +108,15 @@ class planView extends Component {
         }
     }
 
-    onMouseMov = event => {
-        this.mouse.x =
-            (event.clientX / document.getElementById('plan').clientWidth) * 2 -
-            1
-        this.mouse.y =
-            ((document.body.clientHeight - event.clientY) /
-                document.getElementById('plan').clientHeight) *
-                2 -
-            1
-    }
-
     render = () => {
         return (
             <FlexDiv
                 ref={mount => {
                     this.mount = mount
                 }}
+                onMouseDown={this.props.mouseDown}
+                onMouseUp={this.props.mouseUp}
+                onDoubleClick={this.props.doubleClick}
             />
         )
     }

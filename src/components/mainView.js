@@ -11,9 +11,7 @@ class mainView extends Component {
     componentDidMount = () => {
         //setup
         const graph = this.props.graph
-        const box = this.props.box
         const startingPoint = this.props.startingPoint
-        const controlsState = this.props.controls
 
         const scene = this.props.state.scene
         const camera = this.props.state.camera
@@ -34,20 +32,22 @@ class mainView extends Component {
         controls.minDistance = 10
         controls.target = new THREE.Vector3(-10, 0, 0)
 
-        const geometry = new THREE.SphereGeometry(500, 32, 32)
-        const texture = new THREE.TextureLoader().load(
-            graph[startingPoint].path
-        )
-        texture.wrapS = THREE.RepeatWrapping
-        texture.repeat.x = -1
-        const material = new THREE.MeshBasicMaterial({
-            map: texture,
-            side: THREE.BackSide
-        })
-        const sphere = new THREE.Mesh(geometry, material)
-        sphere.name = graph[startingPoint].name
-        sphere.floor = 2
-        scene.add(sphere)
+        if (startingPoint) {
+            const geometry = new THREE.SphereGeometry(500, 32, 32)
+            const texture = new THREE.TextureLoader().load(
+                graph[startingPoint].path
+            )
+            texture.wrapS = THREE.RepeatWrapping
+            texture.repeat.x = -1
+            const material = new THREE.MeshBasicMaterial({
+                map: texture,
+                side: THREE.BackSide
+            })
+            const sphere = new THREE.Mesh(geometry, material)
+            sphere.name = graph[startingPoint].name
+            sphere.floor = graph[startingPoint].floor
+            scene.add(sphere)
+        }
 
         this.scene = this.props.state.scene
         this.camera = this.props.state.camera
@@ -58,10 +58,6 @@ class mainView extends Component {
 
         this.mount.appendChild(this.renderer.domElement)
         this.start()
-
-        document
-            .getElementById('canvas')
-            .addEventListener('mousemove', this.onMouseMove)
     }
 
     componentWillUnmount = () => {
@@ -99,23 +95,14 @@ class mainView extends Component {
         this.controls.update()
     }
 
-    onMouseMove = event => {
-        this.mouse.x =
-            (event.clientX / document.getElementById('canvas').clientWidth) *
-                2 -
-            1
-        this.mouse.y =
-            -(event.clientY / document.getElementById('canvas').clientHeight) *
-                2 +
-            1
-    }
-
     render = () => {
         return (
             <FlexDiv
                 ref={mount => {
                     this.mount = mount
                 }}
+                onMouseDown={this.props.mouseDown}
+                onDoubleClick={this.props.doubleClick}
             />
         )
     }

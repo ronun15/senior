@@ -21,15 +21,22 @@ const MoveDiv = styled.div`
 class DevTab extends Component {
     render() {
         const { addingBox, moving } = this.props.controls
-        const { createBox, addBox, moveBox } = this.props
+        const {
+            addPoint,
+            deletePoint,
+            createBox,
+            addBox,
+            moveBox,
+            saveState
+        } = this.props
         return (
             <OuterDiv>
                 <p>Layers</p>
                 <ul id="layers" />
                 <input id="path" type="text" />{' '}
                 <button onClick={null}>add Layers</button>
-                <button onClick={null}>add point</button>
-                <button onClick={null}>delete point</button>
+                <button onClick={addPoint}>add point</button>
+                <button onClick={deletePoint}>delete point</button>
                 <button onClick={addBox}>{`${
                     addingBox ? 'cancel' : 'add box'
                 }`}</button>
@@ -58,6 +65,7 @@ class DevTab extends Component {
                 <MoveDiv show={addingBox || moving}>
                     <button onClick={moveBox}>finish</button>
                 </MoveDiv>
+                <button onClick={saveState}>save state</button>
             </OuterDiv>
         )
     }
