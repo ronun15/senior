@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import * as THREE from 'three'
 import styled from 'styled-components'
 
 const FlexDiv = styled.div`
@@ -16,9 +15,6 @@ class planView extends Component {
         const renderer = this.props.renderer
         renderer.setSize(this.props.state.width, this.props.state.height)
         renderer.domElement.id = 'plan'
-
-        // sphereElement = []
-        // stickerList = []
 
         const controls = this.props.orbitControls
         controls.enableDamping = true

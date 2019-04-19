@@ -21,8 +21,6 @@ class mainView extends Component {
         renderer.setSize(this.props.state.width, this.props.state.height)
         renderer.domElement.id = 'canvas'
 
-        // stickerList = []
-
         const controls = this.props.orbitControls
         controls.enableDamping = true
         controls.dampingFactor = 0.5
