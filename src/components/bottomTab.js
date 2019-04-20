@@ -24,8 +24,8 @@ const OuterDiv = styled.div`
     background-color: #404040;
     border-radius: 25px;
     border: 2px solid white;
-    overflowx: 'scroll';
-    overflowy: 'hidden';
+    overflow-x: scroll;
+    overflow-y: hidden;
 `
 
 class BottomTab extends Component {
