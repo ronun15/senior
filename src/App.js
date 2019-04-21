@@ -10,10 +10,12 @@ import DevTab from './components/devTab'
 import Menu from './components/menu'
 import Bottomtab from './components/bottomTab'
 import Map from './components/map'
+import DropDown from './components/dropDown'
 
 const MainDiv = styled.div`
     display: flex;
     flex-direction: row;
+    position: relative;
 `
 
 const CanvasDiv = styled.div`
@@ -289,7 +291,10 @@ class App extends Component {
         )
         if (intersects.length > 0) {
             const pathName = document.getElementById('path').value
-            const name = pathName.split('/').pop()
+            const name = pathName
+                .split('/')
+                .pop()
+                .split('.')[0]
 
             if (
                 this.state.currentSphere &&
@@ -1138,6 +1143,10 @@ class App extends Component {
                         show={this.state.controls.showMap}
                         latitude={this.state.latitude}
                         longtitude={this.state.longtitude}
+                    />
+                    <DropDown
+                        graph={this.graph}
+                        changeScene={this.changeScene}
                     />
                     {this.state.env === 'dev' && (
                         <DevTab

@@ -123,23 +123,23 @@ class Menu extends Component {
                         <StyledDiv>
                             <StyledInput
                                 type="image"
-                                alt="Help"
-                                src="./help.png"
-                                onClick={null}
-                            />
-                        </StyledDiv>
-                        <Text>Help</Text>
-                    </OuterDiv>
-                    <OuterDiv>
-                        <StyledDiv>
-                            <StyledInput
-                                type="image"
                                 alt="Change Sticker"
                                 src="./help.png"
                                 onClick={this.props.showSticker}
                             />
                         </StyledDiv>
                         <Text>Change Sticker</Text>
+                    </OuterDiv>
+                    <OuterDiv>
+                        <StyledDiv>
+                            <StyledInput
+                                type="image"
+                                alt="Help"
+                                src="./help.png"
+                                onClick={null}
+                            />
+                        </StyledDiv>
+                        <Text>Help</Text>
                     </OuterDiv>
                 </MenuButton>
             </MenuDiv>
