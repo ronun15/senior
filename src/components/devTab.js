@@ -33,34 +33,96 @@ class DevTab extends Component {
             <OuterDiv>
                 <p>Layers</p>
                 <ul id="layers" />
-                <input id="path" type="text" />{' '}
-                <button onClick={null}>add Layers</button>
-                <button onClick={addPoint}>add point</button>
+                <span>
+                    <input id="path" type="file" />
+                    <button onClick={addPoint}>add point</button>
+                </span>
                 <button onClick={deletePoint}>delete point</button>
                 <button onClick={addBox}>{`${
                     addingBox ? 'cancel' : 'add box'
                 }`}</button>
                 <AddDiv show={addingBox}>
                     <p>Width</p>
-                    <input id="boxWidth" type="number" onChange={createBox} />
+                    <input
+                        id="boxWidth"
+                        type="number"
+                        onChange={() => {
+                            createBox('x')
+                        }}
+                    />
                     <p>Height</p>
-                    <input id="boxHeight" type="number" onChange={createBox} />
+                    <input
+                        id="boxHeight"
+                        type="number"
+                        onChange={() => {
+                            createBox('y')
+                        }}
+                    />
                     <p>Depth</p>
-                    <input id="boxDepth" type="number" onChange={createBox} />
+                    <input
+                        id="boxDepth"
+                        type="number"
+                        onChange={() => {
+                            createBox('z')
+                        }}
+                    />
                     <p>left</p>
-                    <input id="left" type="text" onChange={createBox} />
+                    <input
+                        id="left"
+                        type="file"
+                        onChange={() => {
+                            createBox('left')
+                        }}
+                    />
                     <p>right</p>
-                    <input id="right" type="text" onChange={createBox} />
+                    <input
+                        id="right"
+                        type="file"
+                        onChange={() => {
+                            createBox('right')
+                        }}
+                    />
                     <p>top</p>
-                    <input id="top" type="text" onChange={createBox} />
+                    <input
+                        id="top"
+                        type="file"
+                        onChange={() => {
+                            createBox('top')
+                        }}
+                    />
                     <p>bottom</p>
-                    <input id="bottom" type="text" onChange={createBox} />
+                    <input
+                        id="bottom"
+                        type="file"
+                        onChange={() => {
+                            createBox('bottom')
+                        }}
+                    />
                     <p>front</p>
-                    <input id="front" type="text" onChange={createBox} />
+                    <input
+                        id="front"
+                        type="file"
+                        onChange={() => {
+                            createBox('front')
+                        }}
+                    />
                     <p>back</p>
-                    <input id="back" type="text" onChange={createBox} />
+                    <input
+                        id="back"
+                        type="file"
+                        onChange={() => {
+                            createBox('back')
+                        }}
+                    />
                     <p>name</p>
-                    <input id="boxName" type="text" onChange={createBox} />
+                    <input
+                        id="boxName"
+                        type="text"
+                        autoComplete="off"
+                        onChange={() => {
+                            createBox('name')
+                        }}
+                    />
                 </AddDiv>
                 <MoveDiv show={addingBox || moving}>
                     <button onClick={moveBox}>finish</button>

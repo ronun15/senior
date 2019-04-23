@@ -7,9 +7,7 @@ const DropDownMenu = styled.div`
     left: 5%;
     width: 10%;
     height: auto;
-    cursor: pointer;
     z-index: 1;
-    cursor: pointer;
     background-color: white;
     display: flex;
     flex-direction: column;
@@ -53,9 +51,7 @@ class DropDown extends Component {
                 floor[i].push(name)
             }
         }
-        console.log(floor)
         return Object.keys(floor).map(item => {
-            console.log(item)
             return (
                 <DropDownItem onClick={() => this.onClick(item)}>
                     {this.state.open === item && (
@@ -78,20 +74,24 @@ class DropDown extends Component {
         })
     }
 
-    // hideDropDown = () => {
-    //     this.setState({ open: -1 }, () => {
-    //         document.removeEventListener('click', this.hideDropDown)
-    //     })
-    // }
+    hideDropDown = () => {
+        this.setState({ open: -1 }, () => {
+            document
+                .getElementById('canvas')
+                .removeEventListener('click', this.hideDropDown)
+        })
+    }
 
     onClick = floor => {
         this.setState(
             state => ({
                 open: state.open === floor ? -1 : floor
-            })
-            // () => {
-            //     document.addEventListener('click', this.hideDropDown)
-            // }
+            }),
+            () => {
+                document
+                    .getElementById('canvas')
+                    .addEventListener('click', this.hideDropDown)
+            }
         )
     }
 
