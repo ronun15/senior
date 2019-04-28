@@ -18,10 +18,13 @@ class planView extends Component {
 
         const controls = this.props.orbitControls
         controls.enableDamping = true
+        controls.dampingFactor = 0.5
         controls.enableKeys = false
         controls.enableZoom = true
+        controls.enablePan = true
         controls.minDistance = 1
-        controls.maxDistance = 20
+        controls.maxDistance = 30
+        controls.rotateSpeed = 0.5
 
         if (startingPoint) {
             camera.position.set(

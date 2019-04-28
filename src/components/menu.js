@@ -67,9 +67,25 @@ class Menu extends Component {
 
     open = () => {
         if (this.props.canOpen) {
-            this.setState(state => ({
-                open: !state.open
-            }))
+            const open = this.state.open
+            if (!open) {
+                document
+                    .getElementById('canvas')
+                    .addEventListener('click', this.open)
+                document
+                    .getElementById('plan')
+                    .addEventListener('click', this.open)
+            } else {
+                document
+                    .getElementById('canvas')
+                    .removeEventListener('click', this.open)
+                document
+                    .getElementById('plan')
+                    .removeEventListener('click', this.open)
+            }
+            this.setState({
+                open: !open
+            })
         } else {
             this.setState({
                 open: false
@@ -84,7 +100,7 @@ class Menu extends Component {
     render = () => {
         return (
             <MenuDiv open={this.state.open && this.props.canOpen}>
-                <MenuOpener id="topOpener" onClick={this.open} />
+                <MenuOpener id="opener" onClick={this.open} />
                 <MenuButton>
                     <OuterDiv>
                         <StyledDiv>

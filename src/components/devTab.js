@@ -2,46 +2,74 @@ import React, { Component } from 'react'
 import styled from 'styled-components'
 
 const OuterDiv = styled.div`
+    height: calc(100vh - 60px);
+    width: 20%;
+    overflow-y: scroll;
     display: flex;
     flex-direction: column;
+    padding-top: 30px;
+    padding-bottom: 30px;
 `
-const AddDiv = styled.div`
-    visibility: ${props => (props.show ? 'visible' : 'hidden')};
-    opacity: ${props => (props.show ? '1' : '0')};
-    height: ${props => (props.show ? '50%' : '0')};
-    overflow-y: scroll;
-`
-
-const MoveDiv = styled.div`
+const Div = styled.div`
     visibility: ${props => (props.show ? 'visible' : 'hidden')};
     opacity: ${props => (props.show ? '1' : '0')};
     height: ${props => (props.show ? 'auto' : '0')};
+    display: flex;
+    flex-direction: column;
+    overflow-y: hidden;
+`
+const ScrollDiv = styled.div`
+    visibility: ${props => (props.show ? 'visible' : 'hidden')};
+    opacity: ${props => (props.show ? '1' : '0')};
+    height: ${props => (props.show ? 'auto' : '0')};
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
 `
 
 class DevTab extends Component {
     render() {
-        const { addingBox, moving } = this.props.controls
+        const { addingBox, moving, boxFirstPoint } = this.props.controls
         const {
             addPoint,
+            addSticker,
             deletePoint,
             createBox,
             addBox,
             moveBox,
-            saveState
+            saveState,
+            deleteSticker
         } = this.props
         return (
             <OuterDiv>
-                <p>Layers</p>
-                <ul id="layers" />
-                <span>
-                    <input id="path" type="file" />
-                    <button onClick={addPoint}>add point</button>
-                </span>
-                <button onClick={deletePoint}>delete point</button>
-                <button onClick={addBox}>{`${
-                    addingBox ? 'cancel' : 'add box'
-                }`}</button>
-                <AddDiv show={addingBox}>
+                <Div show={!addingBox && !moving && !boxFirstPoint}>
+                    <h3>Layers</h3>
+                    <ul id="layers" />
+                </Div>
+                <Div show={!addingBox && !moving}>
+                    <h3>Add new 360 picture to box</h3>
+                    <span>
+                        <input id="path" type="file" />
+                        <button onClick={addPoint}>add point</button>
+                    </span>
+                </Div>
+                <Div show={!addingBox && !moving && !boxFirstPoint}>
+                    <h3>Delete existing 360 picture from box</h3>
+                    <button onClick={deletePoint}>delete point</button>
+                    <h3>Add new sticker to sticker list</h3>
+                    <span>
+                        <input id="stickerPath" type="file" />
+                        <button onClick={addSticker}>add sticker</button>
+                    </span>
+                    <h3>Delete current sticker from list</h3>
+                    <button onClick={deleteSticker}>delete sticker</button>
+                    <h3>Create a new box</h3>
+                    <button onClick={addBox}>{`${
+                        addingBox ? 'cancel' : 'add box'
+                    }`}</button>
+                </Div>
+                <ScrollDiv show={addingBox}>
+                    <h3>New box parameters</h3>
                     <p>Width</p>
                     <input
                         id="boxWidth"
@@ -66,6 +94,20 @@ class DevTab extends Component {
                             createBox('z')
                         }}
                     />
+                    <div>
+                        <h3>Create Box from existing directory</h3>
+                        <span>
+                            /asset/360/
+                            <input id="boxFromDirectory" type="text" />
+                            <button
+                                onClick={() => {
+                                    createBox('directory')
+                                }}>
+                                create
+                            </button>
+                        </span>
+                    </div>
+                    <h3>Modify each face</h3>
                     <p>left</p>
                     <input
                         id="left"
@@ -123,11 +165,14 @@ class DevTab extends Component {
                             createBox('name')
                         }}
                     />
-                </AddDiv>
-                <MoveDiv show={addingBox || moving}>
+                </ScrollDiv>
+                <Div show={addingBox || moving}>
                     <button onClick={moveBox}>finish</button>
-                </MoveDiv>
-                <button onClick={saveState}>save state</button>
+                </Div>
+                <Div show={!addingBox && !moving && !boxFirstPoint}>
+                    <h3>Save current state as json</h3>
+                    <button onClick={saveState}>save state</button>
+                </Div>
             </OuterDiv>
         )
     }

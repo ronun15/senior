@@ -51,14 +51,15 @@ class DropDown extends Component {
                 floor[i].push(name)
             }
         }
-        return Object.keys(floor).map(item => {
+        return Object.keys(floor).map((item, index) => {
             return (
-                <DropDownItem onClick={() => this.onClick(item)}>
+                <DropDownItem key={index} onClick={() => this.onClick(item)}>
                     {this.state.open === item && (
                         <ItemFlexDiv>
-                            {floor[item].map(name => {
+                            {floor[item].map((name, index2) => {
                                 return (
                                     <DropDownItem
+                                        key={index2}
                                         onClick={() =>
                                             this.props.changeScene(name, item)
                                         }>

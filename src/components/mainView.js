@@ -20,14 +20,17 @@ class mainView extends Component {
         const renderer = this.props.renderer
         renderer.setSize(this.props.state.width, this.props.state.height)
         renderer.domElement.id = 'canvas'
+        renderer.domElement.addEventListener('wheel', this.updateFOV)
 
         const controls = this.props.orbitControls
         controls.enableDamping = true
         controls.dampingFactor = 0.5
         controls.enableKeys = false
         controls.enableZoom = false
+        controls.enablePan = false
         controls.rotateSpeed = 0.5
-        controls.minDistance = 10
+        controls.minDistance = 1
+        controls.maxDistance = 100
         controls.target = new THREE.Vector3(-10, 0, 0)
 
         if (startingPoint) {
@@ -53,6 +56,9 @@ class mainView extends Component {
         this.controls = this.props.orbitControls
         this.mouse = this.props.mouse
         this.raycaster = this.props.raycaster
+        this.defaultFOV = (55 * Math.PI) / 180
+        this.zoomSpeed = 0.03
+        this.zoomFactor = 1
 
         this.mount.appendChild(this.renderer.domElement)
         this.start()
@@ -91,6 +97,22 @@ class mainView extends Component {
             )
         }
         this.controls.update()
+    }
+
+    updateFOV = e => {
+        let newZoomFactor
+        if (e.deltaY > 0) {
+            newZoomFactor = this.zoomFactor - this.zoomSpeed
+        } else if (e.deltaY < 0) {
+            newZoomFactor = this.zoomFactor + this.zoomSpeed
+        }
+        const fovRad = Math.atan(Math.tan(this.defaultFOV) / newZoomFactor)
+        if (fovRad > 0) {
+            this.camera.fov = (fovRad / Math.PI) * 180
+            this.zoomFactor = newZoomFactor
+        }
+
+        this.camera.updateProjectionMatrix()
     }
 
     render = () => {
