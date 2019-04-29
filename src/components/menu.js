@@ -1,31 +1,47 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+    faBars,
+    faInfoCircle,
+    faQuestionCircle,
+    faSmile,
+    faMapMarkerAlt,
+    faHome,
+    faLayerGroup
+} from '@fortawesome/free-solid-svg-icons'
 
 const MenuDiv = styled.div`
     position: absolute;
-    left: ${props => (props.open ? '0' : '-18%')};
     display: flex;
     flex-direction: row-reverse;
     bottom: 0;
     top: 0;
-    right: ${props => (props.open ? '80%' : '98%')};
+    right: ${props =>
+        props.open ? 'calc(100% - 25rem)' : 'calc(100% - 5rem)'};
     transition: left 1s, right 1s;
     transition-timing-function: ease-in-out;
     z-index: 4;
 `
 
 const MenuOpener = styled.div`
-    width: 10%;
-    background-color: #323335;
+    width: 5rem;
     height: 100%;
+    font-size: 3rem;
+    background-color: #000000;
+    padding: 1rem 0;
+    display: flex;
 `
 
 const MenuButton = styled.div`
-    width: 90%;
+    width: 20rem;
     height: 100%;
     display: flex;
     flex-direction: column;
-    background-color: #404040;
+    background-color: #212121;
+    font-size: 2em;
+    color: white;
+    text-align: center;
 `
 
 const OuterDiv = styled.div`
@@ -34,26 +50,25 @@ const OuterDiv = styled.div`
     flex-direction: row;
     flex: 1;
     overflow-y: hidden;
+    font-size: 2rem;
+    border-bottom: 0.2em solid black;
+    cursor: pointer;
 `
 
 const StyledDiv = styled.div`
     width: 40%
     position: relative;
-`
-
-const StyledInput = styled.input`
-    top: 0;
-    left: 0;
-    position: absolute;
-    width: calc(100% - 10px);
-    padding: 5px;
-    cursor: pointer;
+    display : flex;
+    flex-direction: column;
+    justify-content: center;
 `
 
 const Text = styled.p`
-    width: calc(60% - 20px);
-    padding: 10px;
+    margin: 0
+    width: calc(60% - 2em);
+    margin: auto 1em;
 `
+
 class Menu extends Component {
     constructor(props) {
         super(props)
@@ -69,17 +84,17 @@ class Menu extends Component {
             if (!open) {
                 document
                     .getElementById('canvas')
-                    .addEventListener('click', this.open)
+                    .addEventListener('mousedown', this.open)
                 document
                     .getElementById('plan')
-                    .addEventListener('click', this.open)
+                    .addEventListener('mousedown', this.open)
             } else {
                 document
                     .getElementById('canvas')
-                    .removeEventListener('click', this.open)
+                    .removeEventListener('mousedown', this.open)
                 document
                     .getElementById('plan')
-                    .removeEventListener('click', this.open)
+                    .removeEventListener('mousedown', this.open)
             }
             this.setState({
                 open: !open
@@ -97,66 +112,122 @@ class Menu extends Component {
 
     render = () => {
         return (
-            <MenuDiv open={this.state.open && this.props.canOpen}>
-                <MenuOpener id="opener" onClick={this.open} />
-                <MenuButton>
-                    <OuterDiv>
-                        <StyledDiv>
-                            <StyledInput
-                                type="image"
-                                alt="info"
-                                src="./information.png"
-                                onClick={this.openlink}
-                            />
-                        </StyledDiv>
-                        <Text>Info</Text>
-                    </OuterDiv>
-                    <OuterDiv>
-                        <StyledDiv>
-                            <StyledInput
-                                type="image"
-                                alt="Google maps"
-                                src="./gmap.png"
-                                onClick={this.props.showMap}
-                            />
-                        </StyledDiv>
-                        <Text>Google Maps</Text>
-                    </OuterDiv>
-                    <OuterDiv>
-                        <StyledDiv>
-                            <StyledInput
-                                type="image"
-                                alt="Floor Plan"
-                                src="./plan.png"
-                                onClick={this.props.showPlan}
-                            />
-                        </StyledDiv>
-                        <Text>Floor Plan</Text>
-                    </OuterDiv>
-                    <OuterDiv>
-                        <StyledDiv>
-                            <StyledInput
-                                type="image"
-                                alt="Change Sticker"
-                                src="./help.png"
-                                onClick={this.props.showSticker}
-                            />
-                        </StyledDiv>
-                        <Text>Change Sticker</Text>
-                    </OuterDiv>
-                    <OuterDiv>
-                        <StyledDiv>
-                            <StyledInput
-                                type="image"
-                                alt="Help"
-                                src="./help.png"
-                                onClick={null}
-                            />
-                        </StyledDiv>
-                        <Text>Help</Text>
-                    </OuterDiv>
-                </MenuButton>
-            </MenuDiv>
+            <div id="menu">
+                <MenuDiv open={this.state.open && this.props.canOpen}>
+                    <MenuOpener id="opener">
+                        <FontAwesomeIcon
+                            icon={faBars}
+                            size="lg"
+                            color="white"
+                            style={{ margin: '0 auto', cursor: 'pointer' }}
+                            onClick={this.open}
+                        />
+                    </MenuOpener>
+                    <MenuButton>
+                        <OuterDiv
+                            onClick={() => {
+                                this.openlink()
+                                this.open()
+                            }}>
+                            <StyledDiv>
+                                <FontAwesomeIcon
+                                    icon={faInfoCircle}
+                                    size="3x"
+                                    color="white"
+                                    style={{
+                                        margin: '0 auto'
+                                    }}
+                                />
+                            </StyledDiv>
+                            <Text>ABOUT</Text>
+                        </OuterDiv>
+                        <OuterDiv
+                            onClick={() => {
+                                this.props.showMap()
+                                this.open()
+                            }}>
+                            <StyledDiv>
+                                <FontAwesomeIcon
+                                    icon={faMapMarkerAlt}
+                                    size="3x"
+                                    color="white"
+                                    style={{
+                                        margin: '0 auto'
+                                    }}
+                                />
+                            </StyledDiv>
+                            <Text>GOOGLE MAPS</Text>
+                        </OuterDiv>
+                        <OuterDiv
+                            onClick={() => {
+                                this.props.showPlan()
+                                this.open()
+                            }}>
+                            <StyledDiv>
+                                <FontAwesomeIcon
+                                    icon={faHome}
+                                    size="3x"
+                                    color="white"
+                                    style={{
+                                        margin: '0 auto'
+                                    }}
+                                />
+                            </StyledDiv>
+                            <Text>FLOOR PLAN</Text>
+                        </OuterDiv>
+                        <OuterDiv
+                            onClick={() => {
+                                this.props.showSticker()
+                                this.open()
+                            }}>
+                            <StyledDiv>
+                                <FontAwesomeIcon
+                                    icon={faSmile}
+                                    size="3x"
+                                    color="white"
+                                    style={{
+                                        margin: '0 auto'
+                                    }}
+                                />
+                            </StyledDiv>
+                            <Text>CHANGE STICKERS</Text>
+                        </OuterDiv>
+                        <OuterDiv
+                            onClick={() => {
+                                this.props.showSticker()
+                                this.open()
+                            }}>
+                            <StyledDiv>
+                                <FontAwesomeIcon
+                                    icon={faLayerGroup}
+                                    size="3x"
+                                    color="white"
+                                    style={{
+                                        margin: '0 auto'
+                                    }}
+                                />
+                            </StyledDiv>
+                            <Text>CHANGE LAYERS</Text>
+                        </OuterDiv>
+                        <OuterDiv
+                            onClick={() => {
+                                this.open()
+                            }}>
+                            <StyledDiv>
+                                <FontAwesomeIcon
+                                    icon={faQuestionCircle}
+                                    size="3x"
+                                    color="white"
+                                    style={{
+                                        margin: '0 auto'
+                                    }}
+                                />
+                            </StyledDiv>
+                            <Text>HELP</Text>
+                        </OuterDiv>
+                    </MenuButton>
+                </MenuDiv>
+            </div>
         )
     }
 }

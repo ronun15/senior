@@ -3,7 +3,7 @@ import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
 import styled from 'styled-components'
 
 const GoogleMapDiv = styled.div`
-    width: ${props => (props.env === 'dev' ? '60%' : '80%')};
+    width: 80%;
     height: 80%;
     z-index: 3;
     position: absolute;

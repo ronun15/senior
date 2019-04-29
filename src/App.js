@@ -17,6 +17,7 @@ const MainDiv = styled.div`
     display: flex;
     flex-direction: row;
     position: relative;
+    font-family: 'Kanit', sans-serif;
 `
 
 const CanvasDiv = styled.div`
@@ -34,12 +35,14 @@ const StickerButton = styled.input`
 `
 
 const Shader = styled.div`
-    width: ${props => (props.env === 'dev' ? '80%' : '100%')};
+    width: 100%;
     height: 100%;
     z-index: 2;
     position: absolute;
     background-color: #463d4c;
     opacity: 0.5;
+    top: 0;
+    left: 0;
     visibility: ${props => (props.show ? 'visible' : 'hidden')};
 `
 
@@ -746,17 +749,21 @@ class App extends Component {
                                     currentSphere: sphere
                                 },
                                 () => {
+                                    const temp = []
                                     for (const obj of this.planScene.children) {
                                         if (
                                             obj.name === 'invisiblePlane' ||
                                             obj.name === 'arrowHelper'
                                         ) {
-                                            this.planScene.remove(obj)
+                                            temp.push(obj)
                                         } else if (
                                             obj.name === 'positionPoint'
                                         ) {
                                             obj.visible = true
                                         }
+                                    }
+                                    for (const obj of temp) {
+                                        this.planScene.remove(obj)
                                     }
                                     if (!this.state.startingPoint) {
                                         this.setState({
@@ -1518,9 +1525,15 @@ class App extends Component {
             document
                 .getElementById('shader')
                 .addEventListener('click', this.showMap)
+            document
+                .getElementById('menu')
+                .addEventListener('click', this.showMap)
         } else {
             document
                 .getElementById('shader')
+                .removeEventListener('click', this.showMap)
+            document
+                .getElementById('menu')
                 .removeEventListener('click', this.showMap)
         }
     }
@@ -1582,8 +1595,19 @@ class App extends Component {
                             mouseUp={this.onPlanMouseUp}
                             doubleClick={this.onPlanDoubleClick}
                         />
+                        <Bottomtab
+                            show={this.state.controls.showSticker}
+                            getSticker={this.getSticker}
+                        />
+                        {!this.state.controls.moving &&
+                            !this.state.controls.addingBox &&
+                            !this.state.controls.boxFirstPoint && (
+                                <DropDown
+                                    graph={this.graph}
+                                    changeScene={this.changeScene}
+                                />
+                            )}
                         <Menu
-                            id="menu"
                             canOpen={
                                 !this.state.controls.addingBox &&
                                 !this.state.controls.moving
@@ -1593,30 +1617,17 @@ class App extends Component {
                             showSticker={this.showSticker}
                             websiteLink={this.state.websiteLink}
                         />
-                        <Bottomtab
-                            show={this.state.controls.showSticker}
-                            getSticker={this.getSticker}
+                        <Shader
+                            show={this.state.controls.showMap}
+                            id="shader"
+                        />
+                        <Map
+                            show={this.state.controls.showMap}
+                            latitude={this.state.latitude}
+                            longtitude={this.state.longtitude}
                         />
                     </CanvasDiv>
-                    <Shader
-                        show={this.state.controls.showMap}
-                        env={this.state.env}
-                        id="shader"
-                    />
-                    <Map
-                        env={this.state.env}
-                        show={this.state.controls.showMap}
-                        latitude={this.state.latitude}
-                        longtitude={this.state.longtitude}
-                    />
-                    {!this.state.controls.moving &&
-                        !this.state.controls.addingBox &&
-                        !this.state.controls.boxFirstPoint && (
-                            <DropDown
-                                graph={this.graph}
-                                changeScene={this.changeScene}
-                            />
-                        )}
+
                     {this.state.env === 'dev' && (
                         <DevTab
                             controls={this.state.controls}

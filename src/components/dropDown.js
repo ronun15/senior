@@ -1,23 +1,34 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChevronCircleRight } from '@fortawesome/free-solid-svg-icons'
 
 const DropDownMenu = styled.div`
     position: absolute;
-    top: 5%;
-    left: 5%;
-    width: 10%;
+    top: 0;
+    left: 5rem;
+    width: 15rem;
     height: auto;
     z-index: 1;
-    background-color: white;
+    background-color: black;
     display: flex;
     flex-direction: column;
+    color: white;
+    font-size: 1.2rem;
+    border-left: 0.5rem solid white;
 `
 
 const DropDownItem = styled.div`
     cursor: pointer;
-    background-color: white;
+    background-color: black;
     height: auto;
     position: relative;
+    color: white;
+
+    &:hover {
+        background-color: white;
+        color: black;
+    }
 `
 
 const ItemFlexDiv = styled.div`
@@ -27,7 +38,15 @@ const ItemFlexDiv = styled.div`
     flex-direction: column;
     position: absolute;
     left: 100%;
-    min-width: 100px;
+`
+
+const NavigateP = styled.p`
+    font-size: 2rem;
+    margin: 1rem;
+`
+
+const TextP = styled.p`
+    margin: 1rem;
 `
 
 class DropDown extends Component {
@@ -63,13 +82,23 @@ class DropDown extends Component {
                                         onClick={() =>
                                             this.props.changeScene(name, item)
                                         }>
-                                        <p>{name}</p>
+                                        <TextP>{name}</TextP>
                                     </DropDownItem>
                                 )
                             })}
                         </ItemFlexDiv>
                     )}
-                    <p>{`floor ${item}`}</p>
+                    <TextP>
+                        {`FLOOR ${item}`}
+                        <FontAwesomeIcon
+                            icon={faChevronCircleRight}
+                            size="lg"
+                            pull="right"
+                            style={{
+                                margin: 'auto 0'
+                            }}
+                        />
+                    </TextP>
                 </DropDownItem>
             )
         })
@@ -99,7 +128,7 @@ class DropDown extends Component {
     render = () => {
         return (
             <DropDownMenu>
-                <p>Navigate</p>
+                <NavigateP>NAVIGATE</NavigateP>
                 {this.createDropDown()}
             </DropDownMenu>
         )
