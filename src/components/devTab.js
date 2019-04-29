@@ -167,6 +167,16 @@ class DevTab extends Component {
                 <Div show={addingBox || moving}>
                     <button onClick={moveBox}>finish</button>
                 </Div>
+                <Div show={moving}>
+                    <p>rotate</p>
+                    <input
+                        id="boxName"
+                        type="number"
+                        onChange={() => {
+                            createBox('')
+                        }}
+                    />
+                </Div>
                 <Div show={!addingBox && !moving && !boxFirstPoint}>
                     <h3>Save current state as json</h3>
                     <button onClick={saveState}>save state</button>
