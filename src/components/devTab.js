@@ -42,10 +42,6 @@ class DevTab extends Component {
         } = this.props
         return (
             <OuterDiv>
-                <Div show={!addingBox && !moving && !boxFirstPoint}>
-                    <h3>Layers</h3>
-                    <ul id="layers" />
-                </Div>
                 <Div show={!addingBox && !moving}>
                     <h3>Add new 360 picture to box</h3>
                     <span>
@@ -64,6 +60,8 @@ class DevTab extends Component {
                     <h3>Delete current sticker from list</h3>
                     <button onClick={deleteSticker}>delete sticker</button>
                     <h3>Create a new box</h3>
+                </Div>
+                <Div show={!moving && !boxFirstPoint}>
                     <button onClick={addBox}>{`${
                         addingBox ? 'cancel' : 'add box'
                     }`}</button>

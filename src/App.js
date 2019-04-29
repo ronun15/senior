@@ -90,8 +90,8 @@ class App extends Component {
             currentSticker: data.stickerList[0],
             websiteLink: data.websiteLink
         })
-        this.graph = Object.assign({}, data.graph)
-        this.box = Object.assign({}, data.box)
+        this.graph = { ...data.graph }
+        this.box = { ...data.box }
 
         this.mainScene = new THREE.Scene()
         this.mainCamera = new THREE.PerspectiveCamera(
@@ -149,10 +149,8 @@ class App extends Component {
                         const loader = new THREE.ObjectLoader()
 
                         for (const name in data.graph) {
-                            this.graph[name] = Object.assign(
-                                {},
-                                data.graph[name]
-                            )
+                            this.graph[name] = { ...data.graph[name] }
+
                             this.graph[name].edge = []
                             this.graph[name].sticker = []
                             for (const arrow of data.graph[name].edge) {
@@ -182,10 +180,10 @@ class App extends Component {
 
                         for (const floor in data.box) {
                             for (const room in data.box[floor]) {
-                                this.box[floor][room] = Object.assign(
-                                    {},
-                                    data.box[floor][room]
-                                )
+                                this.box[floor][room] = {
+                                    ...data.box[floor][room]
+                                }
+
                                 const object = loader.parse(
                                     data.box[floor][room].cubeObject
                                 )
@@ -239,9 +237,9 @@ class App extends Component {
     }
 
     saveState = () => {
-        const graphCopy = Object.assign({}, this.graph)
+        const graphCopy = { ...this.graph }
         for (const name in this.graph) {
-            graphCopy[name] = Object.assign({}, this.graph[name])
+            graphCopy[name] = { ...this.graph[name] }
             graphCopy[name].edge = []
             graphCopy[name].sticker = []
             for (const arrow of this.graph[name].edge) {
@@ -251,11 +249,11 @@ class App extends Component {
                 graphCopy[name].sticker.push(sticker.toJSON())
             }
         }
-        const boxCopy = Object.assign({}, this.box)
+        const boxCopy = { ...this.box }
         for (const floor in this.box) {
-            boxCopy[floor] = Object.assign({}, this.box[floor])
+            boxCopy[floor] = { ...this.box[floor] }
             for (const room in this.box[floor]) {
-                boxCopy[floor][room] = Object.assign({}, this.box[floor][room])
+                boxCopy[floor][room] = { ...this.box[floor][room] }
                 boxCopy[floor][room].cubeObject = this.box[floor][
                     room
                 ].cubeObject.toJSON()
@@ -301,13 +299,13 @@ class App extends Component {
     }
 
     resizeWindow = () => {
-        const mainStateCopy = Object.assign({}, this.state.mainState)
+        const mainStateCopy = { ...this.state.mainState }
         mainStateCopy.width =
             this.state.env === 'dev'
                 ? 0.8 * document.documentElement.clientWidth
                 : document.documentElement.clientWidth
 
-        const planStateCopy = Object.assign({}, this.state.planState)
+        const planStateCopy = { ...this.state.planState }
         planStateCopy.width =
             this.state.env === 'dev'
                 ? 0.8 * document.documentElement.clientWidth
@@ -392,7 +390,7 @@ class App extends Component {
     }
 
     raycastCanvas = () => {
-        const controlsCopy = Object.assign({}, this.state.controls)
+        const controlsCopy = { ...this.state.controls }
 
         this.raycaster.setFromCamera(this.mainMouse, this.mainCamera)
         const intersects = this.raycaster.intersectObjects(
@@ -437,7 +435,7 @@ class App extends Component {
     }
 
     raycastPlan = doubleClick => {
-        const controlsCopy = Object.assign({}, this.state.controls)
+        const controlsCopy = { ...this.state.controls }
 
         this.raycaster.setFromCamera(this.planMouse, this.planCamera)
         const intersects = this.raycaster.intersectObjects(
@@ -754,7 +752,7 @@ class App extends Component {
     }
 
     changeScene = (name, floor) => {
-        const currentSphereCopy = Object.assign({}, this.state.currentSphere)
+        const currentSphereCopy = {...this.state.currentSphere}
         let temp = []
         for (const obj of this.mainScene.children) {
             if (obj.name === 'arrow' || obj.name === 'sticker') {
@@ -833,7 +831,7 @@ class App extends Component {
     }
 
     addBox = () => {
-        const controlsCopy = Object.assign({}, this.state.controls)
+        const controlsCopy = {...this.state.controls}
         if (this.state.controls.addingBox === false) {
             controlsCopy.addingBox = true
             for (const obj of this.planScene.children) {
@@ -992,7 +990,7 @@ class App extends Component {
     moveBox = () => {
         const name = document.getElementById('boxName').value
 
-        const controlsCopy = Object.assign({}, this.state.controls)
+        const controlsCopy = {...this.state.controls}
         let movable = true
         for (const floor in this.box) {
             for (const room in this.box[floor]) {
@@ -1245,10 +1243,8 @@ class App extends Component {
                                 this.focusedObject.name ===
                                     this.state.currentSphere.name
                             ) {
-                                const currentSphereCopy = Object.assign(
-                                    {},
-                                    this.state.currentSphere
-                                )
+                                const currentSphereCopy = 
+                                    {...this.state.currentSphere}
                                 currentSphereCopy.userData.floor = this.focusedObject.userData.floor
                                 this.setState({
                                     currentState: currentSphereCopy
@@ -1435,25 +1431,25 @@ class App extends Component {
     }
 
     addingPoint = () => {
-        const controlsCopy = Object.assign({}, this.state.controls)
+        const controlsCopy = {...this.state.controls}
         controlsCopy.addingPoint = true
         this.setState({ controls: controlsCopy })
     }
 
     deletePoint = () => {
-        const controlsCopy = Object.assign({}, this.state.controls)
+        const controlsCopy = {...this.state.controls}
         controlsCopy.deletePoint = true
         this.setState({ controls: controlsCopy })
     }
 
     showPlan = () => {
-        const controlsCopy = Object.assign({}, this.state.controls)
+        const controlsCopy = {...this.state.controls}
         controlsCopy.showPlan = !this.state.controls.showPlan
         this.setState({ controls: controlsCopy }, this.resizeWindow)
     }
 
     showMap = () => {
-        const controlsCopy = Object.assign({}, this.state.controls)
+        const controlsCopy = {...this.state.controls}
         controlsCopy.showMap = !this.state.controls.showMap
         this.setState({ controls: controlsCopy }, this.resizeWindow)
         if (controlsCopy.showMap) {
@@ -1468,7 +1464,7 @@ class App extends Component {
     }
 
     showSticker = () => {
-        const controlsCopy = Object.assign({}, this.state.controls)
+        const controlsCopy = {...this.state.controls}
         controlsCopy.showSticker = !this.state.controls.showSticker
         this.setState({ controls: controlsCopy }, this.resizeWindow)
         if (controlsCopy.showSticker) {

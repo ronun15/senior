@@ -32,14 +32,12 @@ const OuterDiv = styled.div`
     width: 100%;
     display: flex;
     flex-direction: row;
-    height: 15%;
+    flex: 1;
+    overflow-y: hidden;
 `
 
 const StyledDiv = styled.div`
     width: 40%
-    height: 0;
-    overflow: hidden;
-    padding-top: 100%;
     position: relative;
 `
 
