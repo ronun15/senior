@@ -539,11 +539,25 @@ class App extends Component {
                             }
                             arrow.userData.src = 'arrow.png'
                             arrow.rotateX(Math.PI / 2)
-                            arrow.rotateZ(Math.PI / 2 + rad)
+                            arrow.rotateZ(
+                                Math.PI / 2 +
+                                    rad +
+                                    intersects[0].object.rotation.y
+                            )
                             arrow.position.set(
-                                50 * Math.cos(rad - Math.PI / 2),
+                                50 *
+                                    Math.cos(
+                                        rad -
+                                            Math.PI / 2 +
+                                            intersects[0].object.rotation.y
+                                    ),
                                 -50,
-                                50 * Math.sin(rad - Math.PI / 2)
+                                50 *
+                                    Math.sin(
+                                        rad -
+                                            Math.PI / 2 +
+                                            intersects[0].object.rotation.y
+                                    )
                             )
                             arrow.scale.set(5, 5, 5)
                             arrow.name = 'arrow'
@@ -586,11 +600,25 @@ class App extends Component {
                                 }
                                 reverseArrow.userData.src = 'arrow.png'
                                 reverseArrow.rotateX(Math.PI / 2)
-                                reverseArrow.rotateZ(-Math.PI / 2 + rad)
+                                reverseArrow.rotateZ(
+                                    -Math.PI / 2 +
+                                        rad +
+                                        intersects[0].object.rotation.y
+                                )
                                 reverseArrow.position.set(
-                                    50 * Math.cos(rad - (3 * Math.PI) / 2),
+                                    50 *
+                                        Math.cos(
+                                            rad -
+                                                (3 * Math.PI) / 2 +
+                                                intersects[0].object.rotation.y
+                                        ),
                                     -50,
-                                    50 * Math.sin(rad - (3 * Math.PI) / 2)
+                                    50 *
+                                        Math.sin(
+                                            rad -
+                                                (3 * Math.PI) / 2 +
+                                                intersects[0].object.rotation.y
+                                        )
                                 )
                                 reverseArrow.scale.set(5, 5, 5)
                                 reverseArrow.name = 'arrow'
@@ -752,7 +780,7 @@ class App extends Component {
     }
 
     changeScene = (name, floor) => {
-        const currentSphereCopy = {...this.state.currentSphere}
+        const currentSphereCopy = { ...this.state.currentSphere }
         let temp = []
         for (const obj of this.mainScene.children) {
             if (obj.name === 'arrow' || obj.name === 'sticker') {
@@ -831,7 +859,7 @@ class App extends Component {
     }
 
     addBox = () => {
-        const controlsCopy = {...this.state.controls}
+        const controlsCopy = { ...this.state.controls }
         if (this.state.controls.addingBox === false) {
             controlsCopy.addingBox = true
             for (const obj of this.planScene.children) {
@@ -984,162 +1012,173 @@ class App extends Component {
             cube.position.set(0, this.createdObject.y / 2, 0)
             cube.name = this.createdObject.name
             this.planScene.add(cube)
+        } else if (this.state.controls.moving && type === 'rotate') {
+            const name = (this.createdObject.name = document.getElementById(
+                'boxName'
+            ).value)
+            for (const obj of this.planScene.children) {
+                if (obj.name === name) {
+                    console.log(obj)
+                    obj.rotateY(
+                        (Number(document.getElementById('rotate').value) *
+                            Math.PI) /
+                            180 -
+                            obj.rotation.y
+                    )
+                }
+            }
         }
     }
 
     moveBox = () => {
         const name = document.getElementById('boxName').value
-
-        const controlsCopy = {...this.state.controls}
-        let movable = true
-        for (const floor in this.box) {
-            for (const room in this.box[floor]) {
-                if (!movable) break
-                if (room === name) {
-                    movable = false
-                    alert('name used')
-                }
-            }
-            if (!movable) break
-        }
-        if (name === '') {
-            alert('name cannot be blank')
-        }
-
-        if (
-            name !== '' &&
-            movable &&
-            !controlsCopy.moving &&
-            !controlsCopy.boxFirstPoint
-        ) {
-            controlsCopy.moving = true
-            controlsCopy.addingBox = false
-
-            const geometry = new THREE.PlaneBufferGeometry(500, 500)
-            const material = new THREE.MeshBasicMaterial({
-                color: 0xffffff,
-                opacity: 0.2,
-                side: THREE.DoubleSide,
-                transparent: true
-            })
-            const plane = new THREE.Mesh(geometry, material)
-            this.planScene.add(plane)
-            plane.name = 'invisiblePlane'
-            plane.position.set(0, 0, 0)
-            plane.userData.floor = 0
-            plane.rotateX(Math.PI / 2)
-
-            for (const name in this.graph) {
-                if (
-                    this.state.currentSphere &&
-                    name === this.state.currentSphere.name
-                ) {
-                    this.planCamera.position.set(
-                        this.graph[name].pos.x,
-                        this.graph[name].pos.y + 10,
-                        this.graph[name].pos.z
-                    )
-                    this.planCamera.lookAt(
-                        this.graph[name].pos.x,
-                        this.graph[name].pos.y,
-                        this.graph[name].pos.z
-                    )
-                    this.planControls.target.set(
-                        this.graph[name].pos.x,
-                        this.graph[name].pos.y,
-                        this.graph[name].pos.z
-                    )
-                    this.planControls.update()
-                    break
-                } else {
-                    this.planCamera.position.set(0, 10, 0)
-                    this.planCamera.lookAt(0, 0, 0)
-                    this.planControls.target.set(0, 0, 0)
-                    this.planControls.update()
-                }
-            }
-
-            let left = Number.MAX_SAFE_INTEGER
+        const controlsCopy = { ...this.state.controls }
+        if (!controlsCopy.moving && !controlsCopy.boxFirstPoint) {
+            let movable = true
             for (const floor in this.box) {
                 for (const room in this.box[floor]) {
-                    if (
-                        this.box[floor][room].cubeObject.position.x -
-                            this.box[floor][room].cubeObject.geometry.parameters
-                                .width /
-                                2 <
-                        left
-                    ) {
-                        left =
-                            this.box[floor][room].cubeObject.position.x -
-                            this.box[floor][room].cubeObject.geometry.parameters
-                                .width /
-                                2
+                    if (!movable) break
+                    if (room === name) {
+                        movable = false
+                        alert('name used')
                     }
                 }
+                if (!movable) break
+            }
+            if (name === '') {
+                alert('name cannot be blank')
             }
 
-            for (const obj of this.planScene.children) {
-                if (obj.name === name) {
-                    if (left === Number.MAX_SAFE_INTEGER) {
-                        left = 0
-                    }
-                    obj.position.set(
-                        left - obj.geometry.parameters.width / 2,
-                        obj.geometry.parameters.height / 2,
-                        0
-                    )
-                    obj.userData.floor = 1
-                    this.planCamera.position.set(
-                        left - obj.geometry.parameters.width / 2,
-                        obj.geometry.parameters.height / 2 + 10,
-                        0
-                    )
-                    this.planCamera.lookAt(
-                        left - obj.geometry.parameters.width / 2,
-                        obj.geometry.parameters.height / 2,
-                        0
-                    )
-                    this.planControls.target.set(
-                        left - obj.geometry.parameters.width / 2,
-                        obj.geometry.parameters.height / 2,
-                        0
-                    )
-                    if (this.box[obj.userData.floor] === undefined) {
-                        this.box[obj.userData.floor] = {}
-                    }
-                    this.box[obj.userData.floor][obj.name] = {
-                        cubeObject: obj,
-                        point: [],
-                        boundingBox: new THREE.Box3().setFromObject(obj)
+            if (movable && name !== '') {
+                controlsCopy.moving = true
+                controlsCopy.addingBox = false
+
+                const geometry = new THREE.PlaneBufferGeometry(500, 500)
+                const material = new THREE.MeshBasicMaterial({
+                    color: 0xffffff,
+                    opacity: 0.2,
+                    side: THREE.DoubleSide,
+                    transparent: true
+                })
+                const plane = new THREE.Mesh(geometry, material)
+                this.planScene.add(plane)
+                plane.name = 'invisiblePlane'
+                plane.position.set(0, 0, 0)
+                plane.userData.floor = 0
+                plane.rotateX(Math.PI / 2)
+
+                for (const name in this.graph) {
+                    if (
+                        this.state.currentSphere &&
+                        name === this.state.currentSphere.name
+                    ) {
+                        this.planCamera.position.set(
+                            this.graph[name].pos.x,
+                            this.graph[name].pos.y + 10,
+                            this.graph[name].pos.z
+                        )
+                        this.planCamera.lookAt(
+                            this.graph[name].pos.x,
+                            this.graph[name].pos.y,
+                            this.graph[name].pos.z
+                        )
+                        this.planControls.target.set(
+                            this.graph[name].pos.x,
+                            this.graph[name].pos.y,
+                            this.graph[name].pos.z
+                        )
+                        this.planControls.update()
+                        break
+                    } else {
+                        this.planCamera.position.set(0, 10, 0)
+                        this.planCamera.lookAt(0, 0, 0)
+                        this.planControls.target.set(0, 0, 0)
+                        this.planControls.update()
                     }
                 }
-                if (
-                    obj.name !== 'invisiblePlane' &&
-                    obj.name !== 'positionPoint'
-                ) {
-                    for (const mat of obj.material) {
-                        mat.side = THREE.FrontSide
+
+                let left = Number.MAX_SAFE_INTEGER
+                for (const floor in this.box) {
+                    for (const room in this.box[floor]) {
+                        if (
+                            this.box[floor][room].cubeObject.position.x -
+                                this.box[floor][room].cubeObject.geometry
+                                    .parameters.width /
+                                    2 <
+                            left
+                        ) {
+                            left =
+                                this.box[floor][room].cubeObject.position.x -
+                                this.box[floor][room].cubeObject.geometry
+                                    .parameters.width /
+                                    2
+                        }
                     }
                 }
+
+                for (const obj of this.planScene.children) {
+                    if (obj.name === name) {
+                        if (left === Number.MAX_SAFE_INTEGER) {
+                            left = 0
+                        }
+                        obj.position.set(
+                            left - obj.geometry.parameters.width / 2,
+                            obj.geometry.parameters.height / 2,
+                            0
+                        )
+                        obj.userData.floor = 1
+                        this.planCamera.position.set(
+                            left - obj.geometry.parameters.width / 2,
+                            obj.geometry.parameters.height / 2 + 10,
+                            0
+                        )
+                        this.planCamera.lookAt(
+                            left - obj.geometry.parameters.width / 2,
+                            obj.geometry.parameters.height / 2,
+                            0
+                        )
+                        this.planControls.target.set(
+                            left - obj.geometry.parameters.width / 2,
+                            obj.geometry.parameters.height / 2,
+                            0
+                        )
+                        if (this.box[obj.userData.floor] === undefined) {
+                            this.box[obj.userData.floor] = {}
+                        }
+                        this.box[obj.userData.floor][obj.name] = {
+                            cubeObject: obj,
+                            point: [],
+                            boundingBox: new THREE.Box3().setFromObject(obj)
+                        }
+                    }
+                    if (
+                        obj.name !== 'invisiblePlane' &&
+                        obj.name !== 'positionPoint'
+                    ) {
+                        for (const mat of obj.material) {
+                            mat.side = THREE.FrontSide
+                        }
+                    }
+                }
+                this.setState(
+                    {
+                        controls: controlsCopy
+                    },
+                    () => {
+                        document.getElementById('boxWidth').value = ''
+                        document.getElementById('boxHeight').value = ''
+                        document.getElementById('boxDepth').value = ''
+                        document.getElementById('left').value = ''
+                        document.getElementById('right').value = ''
+                        document.getElementById('top').value = ''
+                        document.getElementById('bottom').value = ''
+                        document.getElementById('front').value = ''
+                        document.getElementById('back').value = ''
+                    }
+                )
             }
-            this.setState(
-                {
-                    controls: controlsCopy
-                },
-                () => {
-                    document.getElementById('boxWidth').value = ''
-                    document.getElementById('boxHeight').value = ''
-                    document.getElementById('boxDepth').value = ''
-                    document.getElementById('left').value = ''
-                    document.getElementById('right').value = ''
-                    document.getElementById('top').value = ''
-                    document.getElementById('bottom').value = ''
-                    document.getElementById('front').value = ''
-                    document.getElementById('back').value = ''
-                    document.getElementById('boxName').value = ''
-                }
-            )
         } else if (controlsCopy.moving && !controlsCopy.boxFirstPoint) {
+            document.getElementById('boxName').value = ''
             controlsCopy.moving = false
             controlsCopy.boxFirstPoint = true
 
@@ -1243,8 +1282,9 @@ class App extends Component {
                                 this.focusedObject.name ===
                                     this.state.currentSphere.name
                             ) {
-                                const currentSphereCopy = 
-                                    {...this.state.currentSphere}
+                                const currentSphereCopy = {
+                                    ...this.state.currentSphere
+                                }
                                 currentSphereCopy.userData.floor = this.focusedObject.userData.floor
                                 this.setState({
                                     currentState: currentSphereCopy
@@ -1431,25 +1471,25 @@ class App extends Component {
     }
 
     addingPoint = () => {
-        const controlsCopy = {...this.state.controls}
+        const controlsCopy = { ...this.state.controls }
         controlsCopy.addingPoint = true
         this.setState({ controls: controlsCopy })
     }
 
     deletePoint = () => {
-        const controlsCopy = {...this.state.controls}
+        const controlsCopy = { ...this.state.controls }
         controlsCopy.deletePoint = true
         this.setState({ controls: controlsCopy })
     }
 
     showPlan = () => {
-        const controlsCopy = {...this.state.controls}
+        const controlsCopy = { ...this.state.controls }
         controlsCopy.showPlan = !this.state.controls.showPlan
         this.setState({ controls: controlsCopy }, this.resizeWindow)
     }
 
     showMap = () => {
-        const controlsCopy = {...this.state.controls}
+        const controlsCopy = { ...this.state.controls }
         controlsCopy.showMap = !this.state.controls.showMap
         this.setState({ controls: controlsCopy }, this.resizeWindow)
         if (controlsCopy.showMap) {
@@ -1464,7 +1504,7 @@ class App extends Component {
     }
 
     showSticker = () => {
-        const controlsCopy = {...this.state.controls}
+        const controlsCopy = { ...this.state.controls }
         controlsCopy.showSticker = !this.state.controls.showSticker
         this.setState({ controls: controlsCopy }, this.resizeWindow)
         if (controlsCopy.showSticker) {

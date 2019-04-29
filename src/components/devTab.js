@@ -169,13 +169,16 @@ class DevTab extends Component {
                 </Div>
                 <Div show={moving}>
                     <p>rotate</p>
-                    <input
-                        id="boxName"
-                        type="number"
-                        onChange={() => {
-                            createBox('')
-                        }}
-                    />
+                    <span>
+                        <input
+                            id="rotate"
+                            type="number"
+                            onChange={() => {
+                                createBox('rotate')
+                            }}
+                        />
+                        angle
+                    </span>
                 </Div>
                 <Div show={!addingBox && !moving && !boxFirstPoint}>
                     <h3>Save current state as json</h3>
