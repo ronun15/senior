@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import * as THREE from 'three'
 import styled from 'styled-components'
 import { saveAs } from 'file-saver'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 
 import OrbitControls from './lib/orbitControls'
 
@@ -44,6 +46,15 @@ const Shader = styled.div`
     top: 0;
     left: 0;
     visibility: ${props => (props.show ? 'visible' : 'hidden')};
+`
+
+const LoadingDiv = styled.div`
+    width: 100vw;
+    height: 100vh;
+    font-size: 10rem;
+    background-color: black;
+    color: white;
+    display: flex;
 `
 
 class App extends Component {
@@ -1644,7 +1655,18 @@ class App extends Component {
                 </MainDiv>
             )
         } else {
-            return <div />
+            return (
+                <LoadingDiv>
+                    <FontAwesomeIcon
+                        icon={faSpinner}
+                        size="lg"
+                        pulse 
+                        style={{
+                            margin: 'auto'
+                        }}
+                    />
+                </LoadingDiv>
+            )
         }
     }
 }
