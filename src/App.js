@@ -700,7 +700,10 @@ class App extends Component {
                     .pop()
                     .split('.')[0]
 
-                if (intersects[0].object.name !== 'invisiblePlane') {
+                if (
+                    intersects[0].object.name !== 'invisiblePlane' &&
+                    intersects[0].object.name !== 'arrowHelper'
+                ) {
                     let sphere
                     const reader = new FileReader()
                     const loader = new THREE.TextureLoader()
@@ -744,7 +747,10 @@ class App extends Component {
                                 },
                                 () => {
                                     for (const obj of this.planScene.children) {
-                                        if (obj.name === 'invisiblePlane') {
+                                        if (
+                                            obj.name === 'invisiblePlane' ||
+                                            obj.name === 'arrowHelper'
+                                        ) {
                                             this.planScene.remove(obj)
                                         } else if (
                                             obj.name === 'positionPoint'
@@ -1067,6 +1073,19 @@ class App extends Component {
                 plane.userData.floor = 0
                 plane.rotateX(Math.PI / 2)
 
+                const dir = new THREE.Vector3(0, 0, 1)
+                const origin = new THREE.Vector3(0, 0, 0)
+                const length = 30
+                const hex = 0xff0000
+                const arrowHelper = new THREE.ArrowHelper(
+                    dir,
+                    origin,
+                    length,
+                    hex
+                )
+                arrowHelper.name = 'arrowHelper'
+                this.planScene.add(arrowHelper)
+
                 for (const name in this.graph) {
                     if (
                         this.state.currentSphere &&
@@ -1153,7 +1172,8 @@ class App extends Component {
                     }
                     if (
                         obj.name !== 'invisiblePlane' &&
-                        obj.name !== 'positionPoint'
+                        obj.name !== 'positionPoint' &&
+                        obj.name !== 'arrowHelper'
                     ) {
                         for (const mat of obj.material) {
                             mat.side = THREE.FrontSide
@@ -1174,6 +1194,7 @@ class App extends Component {
                         document.getElementById('bottom').value = ''
                         document.getElementById('front').value = ''
                         document.getElementById('back').value = ''
+                        document.getElementById('boxFromDirectory').value = ''
                     }
                 )
             }
@@ -1212,7 +1233,8 @@ class App extends Component {
         if (intersects.length > 0) {
             if (
                 !this.focusedObject &&
-                intersects[0].object.name !== 'invisiblePlane'
+                intersects[0].object.name !== 'invisiblePlane' &&
+                intersects[0].object.name !== 'arrowHelper'
             ) {
                 this.focusedObject = intersects[0].object
             }
