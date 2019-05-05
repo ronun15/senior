@@ -25,7 +25,7 @@ class Map extends Component {
                             height: '100%',
                             width: '100%'
                         }}
-                        zoom={15}
+                        zoom={17}
                         center={{
                             lat: this.props.latitude,
                             lng: this.props.longtitude

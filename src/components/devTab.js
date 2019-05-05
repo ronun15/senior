@@ -2,13 +2,14 @@ import React, { Component } from 'react'
 import styled from 'styled-components'
 
 const OuterDiv = styled.div`
-    height: calc(100vh - 60px);
+    height: calc(100vh - 4em);
     width: 20%;
     overflow-y: scroll;
     display: flex;
     flex-direction: column;
-    padding-top: 30px;
-    padding-bottom: 30px;
+    padding: 2em 0.5em;
+    color: white;
+    background-color: #212121;
 `
 const Div = styled.div`
     visibility: ${props => (props.show ? 'visible' : 'hidden')};
@@ -38,7 +39,9 @@ class DevTab extends Component {
             addBox,
             moveBox,
             saveState,
-            deleteSticker
+            deleteSticker,
+            addLayer,
+            deleteLayer
         } = this.props
         return (
             <OuterDiv>
@@ -59,6 +62,13 @@ class DevTab extends Component {
                     </span>
                     <h3>Delete current sticker from list</h3>
                     <button onClick={deleteSticker}>delete sticker</button>
+                    <h3>Add new layer to this scene</h3>
+                    <span>
+                        <input id="layerPath" type="file" />
+                        <button onClick={addLayer}>add layer</button>
+                    </span>
+                    <h3>Delete current layer from scene</h3>
+                    <button onClick={deleteLayer}>delete layer</button>
                     <h3>Create a new box</h3>
                 </Div>
                 <Div show={!moving && !boxFirstPoint}>
@@ -168,8 +178,9 @@ class DevTab extends Component {
                     <button onClick={moveBox}>finish</button>
                 </Div>
                 <Div show={moving}>
-                    <p>rotate</p>
+                    <h3>rotate</h3>
                     <span>
+                        rotate
                         <input
                             id="rotate"
                             type="number"
@@ -177,7 +188,7 @@ class DevTab extends Component {
                                 createBox('rotate')
                             }}
                         />
-                        angle
+                        degrees
                     </span>
                 </Div>
                 <Div show={!addingBox && !moving && !boxFirstPoint}>

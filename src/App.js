@@ -63,8 +63,8 @@ class App extends Component {
 
         this.state = {
             env: 'dev',
-            latitude: 13.736851,
-            longtitude: 100.533144,
+            latitude: 0,
+            longtitude: 0,
             loading: true,
             mainState: {
                 height: 0,
@@ -83,12 +83,18 @@ class App extends Component {
                 boxFirstPoint: false,
                 showPlan: false,
                 showMap: false,
-                showSticker: false
+                showSticker: false,
+                showLayer: false
             },
             stickerList: [],
             currentSticker: null,
+            layerList: [],
+            layer:{
+                front: 0,
+                back : 0
+            },
             startingPoint: null,
-            websiteLink: 'https://en.wikipedia.org/wiki/Cat'
+            websiteLink: ''
         }
     }
 
@@ -96,12 +102,12 @@ class App extends Component {
         const data = await this.getData()
         console.log(data.stickerList)
         this.setState({
-            env: data.env,
             latitude: data.latitude,
             longtitude: data.longtitude,
             startingPoint: data.startingPoint,
             stickerList: data.stickerList,
             currentSticker: data.stickerList[0],
+            layerList: data.layerList,
             websiteLink: data.websiteLink
         })
         this.graph = { ...data.graph }
@@ -167,6 +173,7 @@ class App extends Component {
 
                             this.graph[name].edge = []
                             this.graph[name].sticker = []
+                            this.graph[name].layer = []
                             for (const arrow of data.graph[name].edge) {
                                 const object = loader.parse(arrow)
                                 object.material.map.image.src =
@@ -185,6 +192,7 @@ class App extends Component {
                                     object.userData.src
                                 this.graph[name].sticker.push(object)
                             }
+                            // TODO add layer
                             this.graph[name].pos = new THREE.Vector3(
                                 data.graph[name].pos.x,
                                 data.graph[name].pos.y,
@@ -256,11 +264,15 @@ class App extends Component {
             graphCopy[name] = { ...this.graph[name] }
             graphCopy[name].edge = []
             graphCopy[name].sticker = []
+            graphCopy[name].layer = []
             for (const arrow of this.graph[name].edge) {
                 graphCopy[name].edge.push(arrow.toJSON())
             }
             for (const sticker of this.graph[name].sticker) {
                 graphCopy[name].sticker.push(sticker.toJSON())
+            }
+            for (const layer of this.graph[name].layer) {
+                //TODO save layer
             }
         }
         const boxCopy = { ...this.box }
@@ -275,11 +287,11 @@ class App extends Component {
         }
         setTimeout(() => {
             const data = {
-                env: this.state.env,
                 latitude: this.state.latitude,
                 longtitude: this.state.longtitude,
                 startingPoint: this.state.startingPoint,
                 stickerList: this.state.stickerList,
+                layerList: this.state.layerList,
                 websiteLink: this.state.websiteLink,
                 graph: graphCopy,
                 box: boxCopy
@@ -292,6 +304,22 @@ class App extends Component {
 
     getData = async () => {
         let query = new URLSearchParams(window.location.search)
+        if (query.has('env')) {
+            const env = query.get('env')
+            this.setState(
+                {
+                    env: env
+                },
+                this.resizeWindow
+            )
+        } else {
+            this.setState(
+                {
+                    env: ''
+                },
+                this.resizeWindow
+            )
+        }
         if (query.has('input')) {
             const file = query.get('input')
             const output = require(`../data/${file}`)
@@ -301,11 +329,11 @@ class App extends Component {
             return {
                 graph: {},
                 box: {},
-                env: 'dev',
-                latitude: 0.0,
-                longtitude: 0.0,
+                latitude: 13.736851,
+                longtitude: 100.533144,
                 startingPoint: undefined,
                 stickerList: [],
+                layerList: [],
                 websiteLink: '',
                 load: false
             }
@@ -489,6 +517,7 @@ class App extends Component {
                                 ),
                                 edge: [],
                                 sticker: [],
+                                layer: [],
                                 floor: intersects[0].object.userData.floor,
                                 boxName: intersects[0].object.name,
                                 image: dataUrl
@@ -531,6 +560,7 @@ class App extends Component {
                                     ),
                                     edge: [],
                                     sticker: [],
+                                    layer: [],
                                     floor: intersects[0].object.userData.floor,
                                     boxName: intersects[0].object.name,
                                     image: dataUrl
@@ -556,21 +586,23 @@ class App extends Component {
                             arrow.rotateZ(
                                 Math.PI / 2 +
                                     rad +
-                                    intersects[0].object.rotation.y
+                                    intersects[0].object.userData.rotation
                             )
                             arrow.position.set(
                                 50 *
                                     Math.cos(
                                         rad -
                                             Math.PI / 2 +
-                                            intersects[0].object.rotation.y
+                                            intersects[0].object.userData
+                                                .rotation
                                     ),
                                 -50,
                                 50 *
                                     Math.sin(
                                         rad -
                                             Math.PI / 2 +
-                                            intersects[0].object.rotation.y
+                                            intersects[0].object.userData
+                                                .rotation
                                     )
                             )
                             arrow.scale.set(5, 5, 5)
@@ -617,21 +649,23 @@ class App extends Component {
                                 reverseArrow.rotateZ(
                                     -Math.PI / 2 +
                                         rad +
-                                        intersects[0].object.rotation.y
+                                        intersects[0].object.userData.rotation
                                 )
                                 reverseArrow.position.set(
                                     50 *
                                         Math.cos(
                                             rad -
                                                 (3 * Math.PI) / 2 +
-                                                intersects[0].object.rotation.y
+                                                intersects[0].object.userData
+                                                    .rotation
                                         ),
                                     -50,
                                     50 *
                                         Math.sin(
                                             rad -
                                                 (3 * Math.PI) / 2 +
-                                                intersects[0].object.rotation.y
+                                                intersects[0].object.userData
+                                                    .rotation
                                         )
                                 )
                                 reverseArrow.scale.set(5, 5, 5)
@@ -713,6 +747,17 @@ class App extends Component {
                     .split('/')
                     .pop()
                     .split('.')[0]
+                let newName = true
+                for (const roomName in this.graph) {
+                    if (!newName) break
+                    if (roomName === name) {
+                        newName = false
+                    }
+                }
+                if (!newName) {
+                    alert('name used')
+                    return
+                }
 
                 if (
                     intersects[0].object.name !== 'invisiblePlane' &&
@@ -748,6 +793,7 @@ class App extends Component {
                                 ),
                                 edge: [],
                                 sticker: [],
+                                layer: [],
                                 floor: intersects[0].object.userData.floor,
                                 boxName: intersects[0].object.name,
                                 image: e.target.result
@@ -837,6 +883,9 @@ class App extends Component {
             for (const sticker of this.graph[currentSphereCopy.name].sticker) {
                 this.mainScene.add(sticker)
             }
+            for (const layer of this.graph[currentSphereCopy.name].layer) {
+                // TODO add layer after change
+            }
         })
 
         this.planCamera.position.set(
@@ -903,6 +952,7 @@ class App extends Component {
             const cube = new THREE.Mesh(geometry, this.createdObject.material)
             cube.position.set(0, 0.5 + 0.0000000001, 0)
             cube.name = 'new_box'
+            cube.userData.rotation = 0
             this.planScene.add(cube)
             this.planCamera.position.set(0, 10, 0)
             this.planCamera.lookAt(0, 0, 0)
@@ -1035,20 +1085,23 @@ class App extends Component {
             const cube = new THREE.Mesh(geometry, this.createdObject.material)
             cube.position.set(0, this.createdObject.y / 2, 0)
             cube.name = this.createdObject.name
+            cube.userData.rotation = 0
             this.planScene.add(cube)
         } else if (this.state.controls.moving && type === 'rotate') {
-            const name = (this.createdObject.name = document.getElementById(
-                'boxName'
-            ).value)
+            const name = this.createdObject.name
             for (const obj of this.planScene.children) {
                 if (obj.name === name) {
                     console.log(obj)
+                    obj.rotation.set(0, 0, 0)
                     obj.rotateY(
                         (Number(document.getElementById('rotate').value) *
                             Math.PI) /
-                            180 -
-                            obj.rotation.y
+                            180
                     )
+                    obj.userData.rotation =
+                        (Number(document.getElementById('rotate').value) *
+                            Math.PI) /
+                        180
                 }
             }
         }
@@ -1091,7 +1144,7 @@ class App extends Component {
                 plane.userData.floor = 0
                 plane.rotateX(Math.PI / 2)
 
-                const dir = new THREE.Vector3(0, 0, 1)
+                const dir = new THREE.Vector3(-1, 0, 0)
                 const origin = new THREE.Vector3(0, 0, 0)
                 const length = 30
                 const hex = 0xff0000
@@ -1213,6 +1266,7 @@ class App extends Component {
                         document.getElementById('front').value = ''
                         document.getElementById('back').value = ''
                         document.getElementById('boxFromDirectory').value = ''
+                        document.getElementById('rotate').value = ''
                     }
                 )
             }
@@ -1510,6 +1564,41 @@ class App extends Component {
         }
     }
 
+    getLayer = () => {
+        // TODO get layer
+        if (this.state.controls.showLayer) {
+        } else {
+            return
+        }
+    }
+
+    addNewLayer = () => {
+        const file = document.getElementById('layerPath').files[0]
+        console.log(file)
+        const reader = new FileReader()
+        reader.onload = e => {
+            const layerListCopy = [...this.state.layerList]
+            // TODO create layer object
+            if(file.type.startsWith('image')){
+                
+            }else if(file.type.startsWith('video')){
+
+            }
+            layerListCopy.push(e.target.result)
+            this.setState({ layerList: layerListCopy })
+        }
+        reader.readAsDataURL(file)
+    }
+
+    deleteLayer = () => {
+        const layerListCopy = this.state.stickerList
+        const pos = layerListCopy.indexOf(this.state.currentSticker)
+        layerListCopy.splice(pos, 1)
+        this.setState({
+            stickerList: layerListCopy
+        })
+    }
+
     addingPoint = () => {
         const controlsCopy = { ...this.state.controls }
         controlsCopy.addingPoint = true
@@ -1552,6 +1641,7 @@ class App extends Component {
     showSticker = () => {
         const controlsCopy = { ...this.state.controls }
         controlsCopy.showSticker = !this.state.controls.showSticker
+        controlsCopy.showLayer = false
         this.setState({ controls: controlsCopy }, this.resizeWindow)
         if (controlsCopy.showSticker) {
             document
@@ -1567,6 +1657,28 @@ class App extends Component {
             document
                 .getElementById('canvas')
                 .removeEventListener('click', this.showSticker)
+        }
+    }
+
+    showLayer = () => {
+        const controlsCopy = { ...this.state.controls }
+        controlsCopy.showLayer = !this.state.controls.showLayer
+        controlsCopy.showSticker = false
+        this.setState({ controls: controlsCopy }, this.resizeWindow)
+        if (controlsCopy.showLayer) {
+            document
+                .getElementById('plan')
+                .addEventListener('click', this.showLayer)
+            document
+                .getElementById('canvas')
+                .addEventListener('click', this.showLayer)
+        } else {
+            document
+                .getElementById('plan')
+                .removeEventListener('click', this.showLayer)
+            document
+                .getElementById('canvas')
+                .removeEventListener('click', this.showLayer)
         }
     }
 
@@ -1607,8 +1719,10 @@ class App extends Component {
                             doubleClick={this.onPlanDoubleClick}
                         />
                         <Bottomtab
-                            show={this.state.controls.showSticker}
+                            showSticker={this.state.controls.showSticker}
+                            showLayer={this.state.controls.showLayer}
                             getSticker={this.getSticker}
+                            getLayer={this.getLayer}
                         />
                         {!this.state.controls.moving &&
                             !this.state.controls.addingBox &&
@@ -1618,16 +1732,22 @@ class App extends Component {
                                     changeScene={this.changeScene}
                                 />
                             )}
-                        <Menu
-                            canOpen={
-                                !this.state.controls.addingBox &&
-                                !this.state.controls.moving
-                            }
-                            showPlan={this.showPlan}
-                            showMap={this.showMap}
-                            showSticker={this.showSticker}
-                            websiteLink={this.state.websiteLink}
-                        />
+                        {!this.state.controls.moving &&
+                            !this.state.controls.addingBox &&
+                            !this.state.controls.boxFirstPoint && (
+                                <Menu
+                                    canOpen={
+                                        !this.state.controls.addingBox &&
+                                        !this.state.controls.moving
+                                    }
+                                    showPlan={this.showPlan}
+                                    showMap={this.showMap}
+                                    showSticker={this.showSticker}
+                                    showLayer={this.showLayer}
+                                    websiteLink={this.state.websiteLink}
+                                />
+                            )}
+
                         <Shader
                             show={this.state.controls.showMap}
                             id="shader"
@@ -1650,6 +1770,8 @@ class App extends Component {
                             createBox={this.createBox}
                             moveBox={this.moveBox}
                             saveState={this.saveState}
+                            addLayer={this.addNewLayer}
+                            deleteLayer={this.deleteLayer}
                         />
                     )}
                 </MainDiv>
@@ -1660,7 +1782,7 @@ class App extends Component {
                     <FontAwesomeIcon
                         icon={faSpinner}
                         size="lg"
-                        pulse 
+                        pulse
                         style={{
                             margin: 'auto'
                         }}

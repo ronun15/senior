@@ -19,7 +19,7 @@ const MenuDiv = styled.div`
     top: 0;
     right: ${props =>
         props.open ? 'calc(100% - 25rem)' : 'calc(100% - 5rem)'};
-    transition: left 1s, right 1s;
+    transition: left 0.5s, right 0.5s;
     transition-timing-function: ease-in-out;
     z-index: 4;
 `
@@ -193,7 +193,7 @@ class Menu extends Component {
                     </OuterDiv>
                     <OuterDiv
                         onClick={() => {
-                            this.props.showSticker()
+                            this.props.showLayer()
                             this.open()
                         }}>
                         <StyledDiv>

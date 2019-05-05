@@ -21,7 +21,7 @@ const OuterDiv = styled.div`
     display: flex;
     justify-content: center;
     flex-direction: row;
-    background-color: #404040;
+    background-color: #212121;
     border-radius: 25px;
     border: 2px solid white;
     overflow-x: scroll;
@@ -31,8 +31,13 @@ const OuterDiv = styled.div`
 class BottomTab extends Component {
     render = () => {
         return (
-            <Bottom show={this.props.show}>
-                <OuterDiv>{this.props.getSticker()}</OuterDiv>
+            <Bottom show={this.props.showSticker || this.props.showLayer}>
+                {this.props.showSticker && (
+                    <OuterDiv>{this.props.getSticker()}</OuterDiv>
+                )}
+                {this.props.showLayer && (
+                    <OuterDiv>{this.props.getLayer()}</OuterDiv>
+                )}
             </Bottom>
         )
     }
