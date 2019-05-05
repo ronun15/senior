@@ -89,9 +89,9 @@ class App extends Component {
             stickerList: [],
             currentSticker: null,
             layerList: [],
-            layer:{
+            layer: {
                 front: 0,
-                back : 0
+                back: 0
             },
             startingPoint: null,
             websiteLink: ''
@@ -1579,10 +1579,8 @@ class App extends Component {
         reader.onload = e => {
             const layerListCopy = [...this.state.layerList]
             // TODO create layer object
-            if(file.type.startsWith('image')){
-                
-            }else if(file.type.startsWith('video')){
-
+            if (file.type.startsWith('image')) {
+            } else if (file.type.startsWith('video')) {
             }
             layerListCopy.push(e.target.result)
             this.setState({ layerList: layerListCopy })
