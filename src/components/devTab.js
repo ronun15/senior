@@ -17,7 +17,7 @@ const Div = styled.div`
     height: ${props => (props.show ? 'auto' : '0')};
     display: flex;
     flex-direction: column;
-    overflow-y: hidden;
+    overflow-y: ${props => (props.show ? '' : 'hidden')};
 `
 const ScrollDiv = styled.div`
     visibility: ${props => (props.show ? 'visible' : 'hidden')};
@@ -25,7 +25,7 @@ const ScrollDiv = styled.div`
     height: ${props => (props.show ? 'auto' : '0')};
     display: flex;
     flex-direction: column;
-    overflow-y: scroll;
+    overflow-y: ${props => (props.show ? '' : 'hidden')};
 `
 
 class DevTab extends Component {
@@ -63,9 +63,34 @@ class DevTab extends Component {
                     <h3>Delete current sticker from list</h3>
                     <button onClick={deleteSticker}>delete sticker</button>
                     <h3>Add new layer to this scene</h3>
+                    <input id="layerPath" type="file" />
+                    <p> chromakey color</p>
+                    <Div show={!addingBox && !moving && !boxFirstPoint}>
+                        r
+                        <input id="red" type="number" max="255" min="0" />
+                    </Div>
+                    <Div show={!addingBox && !moving && !boxFirstPoint}>
+                        g
+                        <input id="green" type="number" max="255" min="0" />
+                    </Div>
+                    <Div show={!addingBox && !moving && !boxFirstPoint}>
+                        b
+                        <input id="blue" type="number" max="255" min="0" />
+                    </Div>
+
                     <span>
-                        <input id="layerPath" type="file" />
-                        <button onClick={addLayer}>add layer</button>
+                        <button
+                            onClick={() => {
+                                addLayer('front')
+                            }}>
+                            add layer front
+                        </button>
+                        <button
+                            onClick={() => {
+                                addLayer('back')
+                            }}>
+                            add layer back
+                        </button>
                     </span>
                     <h3>Delete current layer from scene</h3>
                     <button onClick={deleteLayer}>delete layer</button>

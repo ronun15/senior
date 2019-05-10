@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 
 import OrbitControls from './lib/orbitControls'
+import THREEx from './lib/chromakey'
 
 import MainView from './components/mainView'
 import PlanView from './components/planView'
@@ -13,6 +14,7 @@ import DevTab from './components/devTab'
 import Menu from './components/menu'
 import Bottomtab from './components/bottomTab'
 import Map from './components/map'
+import Help from './components/help'
 import DropDown from './components/dropDown'
 
 const MainDiv = styled.div`
@@ -29,11 +31,19 @@ const CanvasDiv = styled.div`
     height: 100%;
 `
 
-const StickerButton = styled.input`
+const BottomButton = styled.input`
     height: 75%;
-    margin: 10px;
+    margin: auto;
     border: ${props => (props.select ? '3px solid red' : null)};
     border-radius: ${props => (props.select ? '10px' : null)};
+`
+
+const BottomVideo = styled.video`
+    height: 75%;
+    margin: auto;
+    border: ${props => (props.select ? '3px solid red' : null)};
+    border-radius: ${props => (props.select ? '10px' : null)};
+    cursor: pointer;
 `
 
 const Shader = styled.div`
@@ -84,15 +94,17 @@ class App extends Component {
                 showPlan: false,
                 showMap: false,
                 showSticker: false,
-                showLayer: false
+                showFront: false,
+                showBack: false,
+                showHelp: false
             },
             stickerList: [],
-            currentSticker: null,
-            layerList: [],
-            layer: {
-                front: 0,
-                back: 0
+            layerList: {
+                front: [],
+                back: []
             },
+            videoList: [],
+            currentSticker: null,
             startingPoint: null,
             websiteLink: ''
         }
@@ -100,14 +112,14 @@ class App extends Component {
 
     componentDidMount = async () => {
         const data = await this.getData()
-        console.log(data.stickerList)
+        console.log(data.graph)
         this.setState({
             latitude: data.latitude,
             longtitude: data.longtitude,
             startingPoint: data.startingPoint,
             stickerList: data.stickerList,
             currentSticker: data.stickerList[0],
-            layerList: data.layerList,
+            //layerList: data.layerList,
             websiteLink: data.websiteLink
         })
         this.graph = { ...data.graph }
@@ -157,9 +169,12 @@ class App extends Component {
                 const geometry = new THREE.SphereGeometry(500, 32, 32)
                 const material = new THREE.MeshBasicMaterial({
                     side: THREE.BackSide,
-                    map: texture
+                    map: texture,
+                    transparent: true,
+                    alphaTest: 0.7
                 })
                 const sphere = new THREE.Mesh(geometry, material)
+                sphere.name = data.startingPoint
                 this.mainScene.add(sphere)
                 this.setState(
                     {
@@ -173,7 +188,6 @@ class App extends Component {
 
                             this.graph[name].edge = []
                             this.graph[name].sticker = []
-                            this.graph[name].layer = []
                             for (const arrow of data.graph[name].edge) {
                                 const object = loader.parse(arrow)
                                 object.material.map.image.src =
@@ -192,7 +206,6 @@ class App extends Component {
                                     object.userData.src
                                 this.graph[name].sticker.push(object)
                             }
-                            // TODO add layer
                             this.graph[name].pos = new THREE.Vector3(
                                 data.graph[name].pos.x,
                                 data.graph[name].pos.y,
@@ -262,17 +275,26 @@ class App extends Component {
         const graphCopy = { ...this.graph }
         for (const name in this.graph) {
             graphCopy[name] = { ...this.graph[name] }
+            graphCopy[name].layer = {}
+            graphCopy[name].layer.front = []
+            graphCopy[name].layer.back = []
             graphCopy[name].edge = []
             graphCopy[name].sticker = []
-            graphCopy[name].layer = []
             for (const arrow of this.graph[name].edge) {
                 graphCopy[name].edge.push(arrow.toJSON())
             }
             for (const sticker of this.graph[name].sticker) {
                 graphCopy[name].sticker.push(sticker.toJSON())
             }
-            for (const layer of this.graph[name].layer) {
-                //TODO save layer
+            for (const item in this.graph[name].layer.front) {
+                graphCopy[name].layer.front.push(
+                    this.graph[name].layer.front[item]
+                )
+            }
+            for (const item in this.graph[name].layer.back) {
+                graphCopy[name].layer.back.push(
+                    this.graph[name].layer.back[item]
+                )
             }
         }
         const boxCopy = { ...this.box }
@@ -291,7 +313,6 @@ class App extends Component {
                 longtitude: this.state.longtitude,
                 startingPoint: this.state.startingPoint,
                 stickerList: this.state.stickerList,
-                layerList: this.state.layerList,
                 websiteLink: this.state.websiteLink,
                 graph: graphCopy,
                 box: boxCopy
@@ -333,7 +354,6 @@ class App extends Component {
                 longtitude: 100.533144,
                 startingPoint: undefined,
                 stickerList: [],
-                layerList: [],
                 websiteLink: '',
                 load: false
             }
@@ -498,6 +518,10 @@ class App extends Component {
                     .split('.')[0]
                 const reader = new FileReader()
                 let dataUrl
+                if (!file.type.startsWith('image')) {
+                    alert('image only')
+                    return
+                }
                 reader.onload = e => {
                     dataUrl = e.target.result
                     if (name !== this.state.currentSphere.name) {
@@ -517,7 +541,7 @@ class App extends Component {
                                 ),
                                 edge: [],
                                 sticker: [],
-                                layer: [],
+                                layer: { front: [], back: [] },
                                 floor: intersects[0].object.userData.floor,
                                 boxName: intersects[0].object.name,
                                 image: dataUrl
@@ -539,154 +563,179 @@ class App extends Component {
                             const rad = Math.atan2(yDif, xDif) + Math.PI
 
                             const geometry = new THREE.PlaneGeometry(5, 5, 32)
-                            const texture = new THREE.TextureLoader().load(
-                                'arrow.png'
-                            )
-                            const material = new THREE.MeshBasicMaterial({
-                                map: texture,
-                                transparent: true,
-                                side: THREE.DoubleSide
-                            })
+                            new THREE.TextureLoader().load(
+                                'arrow.png',
+                                texture => {
+                                    const material = new THREE.MeshBasicMaterial(
+                                        {
+                                            map: texture,
+                                            transparent: true,
+                                            side: THREE.DoubleSide,
+                                            alphaTest: 0.7
+                                        }
+                                    )
 
-                            const arrow = new THREE.Mesh(geometry, material)
-                            const newPoint = this.graph[name] === undefined
+                                    const arrow = new THREE.Mesh(
+                                        geometry,
+                                        material
+                                    )
+                                    const newPoint =
+                                        this.graph[name] === undefined
 
-                            if (newPoint) {
-                                this.graph[name] = {
-                                    pos: new THREE.Vector3(
-                                        intersects[0].point.x,
-                                        intersects[0].point.y,
-                                        intersects[0].point.z
-                                    ),
-                                    edge: [],
-                                    sticker: [],
-                                    layer: [],
-                                    floor: intersects[0].object.userData.floor,
-                                    boxName: intersects[0].object.name,
-                                    image: dataUrl
-                                }
-                                arrow.userData.floor =
-                                    intersects[0].object.userData.floor
-                                arrow.userData.delPath = {
-                                    name: name,
-                                    box: intersects[0].object.name
-                                }
-                                this.box[intersects[0].object.userData.floor][
-                                    intersects[0].object.name
-                                ].point.push(name)
-                            } else {
-                                arrow.userData.floor = this.graph[name].floor
-                                arrow.userData.delPath = {
-                                    name: name,
-                                    box: this.graph[name].boxName
-                                }
-                            }
-                            arrow.userData.src = 'arrow.png'
-                            arrow.rotateX(Math.PI / 2)
-                            arrow.rotateZ(
-                                Math.PI / 2 +
-                                    rad +
-                                    intersects[0].object.userData.rotation
-                            )
-                            arrow.position.set(
-                                50 *
-                                    Math.cos(
-                                        rad -
-                                            Math.PI / 2 +
-                                            intersects[0].object.userData
-                                                .rotation
-                                    ),
-                                -50,
-                                50 *
-                                    Math.sin(
-                                        rad -
-                                            Math.PI / 2 +
+                                    if (newPoint) {
+                                        this.graph[name] = {
+                                            pos: new THREE.Vector3(
+                                                intersects[0].point.x,
+                                                intersects[0].point.y,
+                                                intersects[0].point.z
+                                            ),
+                                            edge: [],
+                                            sticker: [],
+                                            layer: { front: [], back: [] },
+                                            floor:
+                                                intersects[0].object.userData
+                                                    .floor,
+                                            boxName: intersects[0].object.name,
+                                            image: dataUrl
+                                        }
+                                        arrow.userData.floor =
+                                            intersects[0].object.userData.floor
+                                        arrow.userData.delPath = {
+                                            name: name,
+                                            box: intersects[0].object.name
+                                        }
+                                        this.box[
+                                            intersects[0].object.userData.floor
+                                        ][intersects[0].object.name].point.push(
+                                            name
+                                        )
+                                    } else {
+                                        arrow.userData.floor = this.graph[
+                                            name
+                                        ].floor
+                                        arrow.userData.delPath = {
+                                            name: name,
+                                            box: this.graph[name].boxName
+                                        }
+                                    }
+                                    arrow.userData.src = 'arrow.png'
+                                    arrow.rotateX(Math.PI / 2)
+                                    arrow.rotateZ(
+                                        Math.PI / 2 +
+                                            rad +
                                             intersects[0].object.userData
                                                 .rotation
                                     )
-                            )
-                            arrow.scale.set(5, 5, 5)
-                            arrow.name = 'arrow'
+                                    arrow.position.set(
+                                        50 *
+                                            Math.cos(
+                                                rad -
+                                                    Math.PI / 2 +
+                                                    intersects[0].object
+                                                        .userData.rotation
+                                            ),
+                                        -50,
+                                        50 *
+                                            Math.sin(
+                                                rad -
+                                                    Math.PI / 2 +
+                                                    intersects[0].object
+                                                        .userData.rotation
+                                            )
+                                    )
+                                    arrow.scale.set(5, 5, 5)
+                                    arrow.name = 'arrow'
 
-                            arrow.onClickFunction = () => {
-                                this.changeScene(name, arrow.userData.floor)
-                            }
-                            arrow.userData.onClickFunctionName = name
-                            arrow.userData.onClickFunctionFloor =
-                                arrow.userData.floor
-
-                            if (
-                                this.graph[this.state.currentSphere.name]
-                                    .boxName === intersects[0].object.name &&
-                                this.box[intersects[0].object.userData.floor][
-                                    intersects[0].object.name
-                                ].point.indexOf(name) !== -1
-                            ) {
-                                const reverseArrow = new THREE.Mesh(
-                                    geometry,
-                                    material
-                                )
-                                const currentName = this.state.currentSphere
-                                    .name
-
-                                if (newPoint) {
-                                    reverseArrow.userData.floor =
-                                        intersects[0].object.userData.floor
-                                    reverseArrow.userData.delPath = {
-                                        name: currentName,
-                                        box: intersects[0].object.name
+                                    arrow.onClickFunction = () => {
+                                        this.changeScene(
+                                            name,
+                                            arrow.userData.floor
+                                        )
                                     }
-                                } else {
-                                    reverseArrow.userData.floor =
-                                        intersects[0].object.userData.floor
-                                    reverseArrow.userData.delPath = {
-                                        name: currentName,
-                                        box: this.graph[currentName].boxName
-                                    }
-                                }
-                                reverseArrow.userData.src = 'arrow.png'
-                                reverseArrow.rotateX(Math.PI / 2)
-                                reverseArrow.rotateZ(
-                                    -Math.PI / 2 +
-                                        rad +
-                                        intersects[0].object.userData.rotation
-                                )
-                                reverseArrow.position.set(
-                                    50 *
-                                        Math.cos(
-                                            rad -
-                                                (3 * Math.PI) / 2 +
-                                                intersects[0].object.userData
-                                                    .rotation
-                                        ),
-                                    -50,
-                                    50 *
-                                        Math.sin(
-                                            rad -
-                                                (3 * Math.PI) / 2 +
+                                    arrow.userData.onClickFunctionName = name
+                                    arrow.userData.onClickFunctionFloor =
+                                        arrow.userData.floor
+
+                                    if (
+                                        this.graph[
+                                            this.state.currentSphere.name
+                                        ].boxName ===
+                                            intersects[0].object.name &&
+                                        this.box[
+                                            intersects[0].object.userData.floor
+                                        ][
+                                            intersects[0].object.name
+                                        ].point.indexOf(name) !== -1
+                                    ) {
+                                        const reverseArrow = new THREE.Mesh(
+                                            geometry,
+                                            material
+                                        )
+                                        const currentName = this.state
+                                            .currentSphere.name
+
+                                        if (newPoint) {
+                                            reverseArrow.userData.floor =
+                                                intersects[0].object.userData.floor
+                                            reverseArrow.userData.delPath = {
+                                                name: currentName,
+                                                box: intersects[0].object.name
+                                            }
+                                        } else {
+                                            reverseArrow.userData.floor =
+                                                intersects[0].object.userData.floor
+                                            reverseArrow.userData.delPath = {
+                                                name: currentName,
+                                                box: this.graph[currentName]
+                                                    .boxName
+                                            }
+                                        }
+                                        reverseArrow.userData.src = 'arrow.png'
+                                        reverseArrow.rotateX(Math.PI / 2)
+                                        reverseArrow.rotateZ(
+                                            -Math.PI / 2 +
+                                                rad +
                                                 intersects[0].object.userData
                                                     .rotation
                                         )
-                                )
-                                reverseArrow.scale.set(5, 5, 5)
-                                reverseArrow.name = 'arrow'
+                                        reverseArrow.position.set(
+                                            50 *
+                                                Math.cos(
+                                                    rad -
+                                                        (3 * Math.PI) / 2 +
+                                                        intersects[0].object
+                                                            .userData.rotation
+                                                ),
+                                            -50,
+                                            50 *
+                                                Math.sin(
+                                                    rad -
+                                                        (3 * Math.PI) / 2 +
+                                                        intersects[0].object
+                                                            .userData.rotation
+                                                )
+                                        )
+                                        reverseArrow.scale.set(5, 5, 5)
+                                        reverseArrow.name = 'arrow'
 
-                                reverseArrow.onClickFunction = () => {
-                                    this.changeScene(
-                                        currentName,
-                                        reverseArrow.userData.floor
-                                    )
+                                        reverseArrow.onClickFunction = () => {
+                                            this.changeScene(
+                                                currentName,
+                                                reverseArrow.userData.floor
+                                            )
+                                        }
+                                        reverseArrow.userData.onClickFunctionName = currentName
+                                        reverseArrow.userData.onClickFunctionFloor =
+                                            reverseArrow.userData.floor
+                                        this.graph[name].edge.push(reverseArrow)
+                                    }
+
+                                    this.graph[
+                                        this.state.currentSphere.name
+                                    ].edge.push(arrow)
+                                    this.changeScene(name, arrow.userData.floor)
                                 }
-                                reverseArrow.userData.onClickFunctionName = currentName
-                                reverseArrow.userData.onClickFunctionFloor =
-                                    reverseArrow.userData.floor
-                                this.graph[name].edge.push(reverseArrow)
-                            }
-
-                            this.graph[this.state.currentSphere.name].edge.push(
-                                arrow
                             )
-                            this.changeScene(name, arrow.userData.floor)
                         }
 
                         controlsCopy.addingPoint = false
@@ -747,6 +796,10 @@ class App extends Component {
                     .split('/')
                     .pop()
                     .split('.')[0]
+                if (!file.type.startsWith('image')) {
+                    alert('image only')
+                    return
+                }
                 let newName = true
                 for (const roomName in this.graph) {
                     if (!newName) break
@@ -777,7 +830,9 @@ class App extends Component {
                             )
                             const material = new THREE.MeshBasicMaterial({
                                 map: texture,
-                                side: THREE.BackSide
+                                side: THREE.BackSide,
+                                transparent: true,
+                                alphaTest: 0.7
                             })
                             sphere = new THREE.Mesh(geometry, material)
                             sphere.name = name
@@ -793,7 +848,7 @@ class App extends Component {
                                 ),
                                 edge: [],
                                 sticker: [],
-                                layer: [],
+                                layer: { front: [], back: [] },
                                 floor: intersects[0].object.userData.floor,
                                 boxName: intersects[0].object.name,
                                 image: e.target.result
@@ -883,9 +938,15 @@ class App extends Component {
             for (const sticker of this.graph[currentSphereCopy.name].sticker) {
                 this.mainScene.add(sticker)
             }
-            for (const layer of this.graph[currentSphereCopy.name].layer) {
-                // TODO add layer after change
-            }
+            this.removeLayerChangeScene()
+            this.addLayerChangeScene(
+                'front',
+                this.graph[currentSphereCopy.name].layer.front
+            )
+            this.addLayerChangeScene(
+                'back',
+                this.graph[currentSphereCopy.name].layer.back
+            )
         })
 
         this.planCamera.position.set(
@@ -1038,21 +1099,51 @@ class App extends Component {
                 if (type === 'left') {
                     data = document.getElementById('left').files[0]
                     i = 0
+                    if (!data.type.startsWith('image')) {
+                        alert('image only')
+                        document.getElementById('left').files[0] = ''
+                        data = undefined
+                    }
                 } else if (type === 'right') {
                     data = document.getElementById('right').files[0]
                     i = 1
+                    if (!data.type.startsWith('image')) {
+                        alert('image only')
+                        document.getElementById('right').files[0] = ''
+                        data = undefined
+                    }
                 } else if (type === 'top') {
                     data = document.getElementById('top').files[0]
                     i = 2
+                    if (!data.type.startsWith('image')) {
+                        alert('image only')
+                        document.getElementById('top').files[0] = ''
+                        data = undefined
+                    }
                 } else if (type === 'bottom') {
                     data = document.getElementById('bottom').files[0]
                     i = 3
+                    if (!data.type.startsWith('image')) {
+                        alert('image only')
+                        document.getElementById('bottom').files[0] = ''
+                        data = undefined
+                    }
                 } else if (type === 'front') {
                     data = document.getElementById('front').files[0]
                     i = 4
+                    if (!data.type.startsWith('image')) {
+                        alert('image only')
+                        document.getElementById('front').files[0] = ''
+                        data = undefined
+                    }
                 } else if (type === 'back') {
                     data = document.getElementById('back').files[0]
                     i = 5
+                    if (!data.type.startsWith('image')) {
+                        alert('image only')
+                        document.getElementById('back').files[0] = ''
+                        data = undefined
+                    }
                 }
                 if (data) {
                     const reader = new FileReader()
@@ -1083,7 +1174,7 @@ class App extends Component {
                 this.createdObject.z
             )
             const cube = new THREE.Mesh(geometry, this.createdObject.material)
-            cube.position.set(0, this.createdObject.y / 2, 0)
+            cube.position.set(0, this.createdObject.y / 2 + 0.0000000001, 0)
             cube.name = this.createdObject.name
             cube.userData.rotation = 0
             this.planScene.add(cube)
@@ -1091,7 +1182,6 @@ class App extends Component {
             const name = this.createdObject.name
             for (const obj of this.planScene.children) {
                 if (obj.name === name) {
-                    console.log(obj)
                     obj.rotation.set(0, 0, 0)
                     obj.rotateY(
                         (Number(document.getElementById('rotate').value) *
@@ -1477,7 +1567,7 @@ class App extends Component {
             ].sticker.indexOf(sticker)
             this.graph[this.state.currentSphere.name].sticker.splice(pos, 1)
             this.mainScene.remove(sticker)
-        } else {
+        } else if (this.state.currentSticker) {
             const normal = intersects[intersects.length - 1].point.normalize()
             const xzPlane = new THREE.Vector3(normal.x, 0, normal.z).normalize()
             const xyPlane = new THREE.Vector3(
@@ -1503,7 +1593,8 @@ class App extends Component {
             const material = new THREE.MeshBasicMaterial({
                 map: texture,
                 side: THREE.FrontSide,
-                transparent: true
+                transparent: true,
+                alphaTest: 0.3
             })
             const sticker = new THREE.Mesh(geometry, material)
             sticker.position.copy(normal.multiplyScalar(450))
@@ -1519,6 +1610,10 @@ class App extends Component {
 
     addNewSticker = () => {
         const file = document.getElementById('stickerPath').files[0]
+        if (!file.type.startsWith('image')) {
+            alert('image only')
+            return
+        }
         const reader = new FileReader()
         reader.onload = e => {
             const stickerListCopy = this.state.stickerList
@@ -1545,7 +1640,7 @@ class App extends Component {
         if (this.state.controls.showSticker) {
             return this.state.stickerList.map((item, index) => {
                 return (
-                    <StickerButton
+                    <BottomButton
                         type="image"
                         key={index}
                         alt={item}
@@ -1565,37 +1660,337 @@ class App extends Component {
     }
 
     getLayer = () => {
-        // TODO get layer
-        if (this.state.controls.showLayer) {
+        const temp = []
+        if (this.state.controls.showFront) {
+            for (const name in this.graph[this.state.currentSphere.name].layer
+                .front) {
+                temp.push(name)
+            }
+            return temp.map((item, index) => {
+                if (
+                    this.graph[this.state.currentSphere.name].layer.front[
+                        item
+                    ].data.startsWith('data:image')
+                ) {
+                    return (
+                        <BottomButton
+                            type="image"
+                            key={index}
+                            alt={item}
+                            src={
+                                this.graph[this.state.currentSphere.name].layer
+                                    .front[item].data
+                            }
+                            select={
+                                this.state.layerList.front.indexOf(item) !== -1
+                            }
+                            onClick={() => {
+                                this.toggleLayer('front', item)
+                            }}
+                        />
+                    )
+                } else if (
+                    this.graph[this.state.currentSphere.name].layer.front[
+                        item
+                    ].data.startsWith('data:video')
+                ) {
+                    return (
+                        <BottomVideo
+                            key={index}
+                            src={
+                                this.graph[this.state.currentSphere.name].layer
+                                    .front[item].data
+                            }
+                            select={
+                                this.state.layerList.front.indexOf(item) !== -1
+                            }
+                            onClick={() => {
+                                this.toggleLayer('front', item)
+                            }}
+                            autoPlay
+                            muted
+                            loop
+                        />
+                    )
+                } else {
+                    return null
+                }
+            })
+        } else if (this.state.controls.showBack) {
+            for (const name in this.graph[this.state.currentSphere.name].layer
+                .back) {
+                temp.push(name)
+            }
+            return temp.map((item, index) => {
+                if (
+                    this.graph[this.state.currentSphere.name].layer.back[
+                        item
+                    ].data.startsWith('data:image')
+                ) {
+                    return (
+                        <BottomButton
+                            type="image"
+                            key={index}
+                            alt={item}
+                            src={
+                                this.graph[this.state.currentSphere.name].layer
+                                    .back[item].data
+                            }
+                            select={
+                                this.state.layerList.back.indexOf(item) !== -1
+                            }
+                            onClick={() => {
+                                this.toggleLayer('back', item)
+                            }}
+                        />
+                    )
+                } else if (
+                    this.graph[this.state.currentSphere.name].layer.back[
+                        item
+                    ].data.startsWith('data:video')
+                ) {
+                    return (
+                        <BottomVideo
+                            key={index}
+                            src={
+                                this.graph[this.state.currentSphere.name].layer
+                                    .back[item].data
+                            }
+                            select={
+                                this.state.layerList.back.indexOf(item) !== -1
+                            }
+                            onClick={() => {
+                                this.toggleLayer('back', item)
+                            }}
+                            autoPlay
+                            muted
+                            loop
+                        />
+                    )
+                } else {
+                    return null
+                }
+            })
         } else {
             return
         }
     }
 
-    addNewLayer = () => {
-        const file = document.getElementById('layerPath').files[0]
-        console.log(file)
-        const reader = new FileReader()
-        reader.onload = e => {
-            const layerListCopy = [...this.state.layerList]
-            // TODO create layer object
-            if (file.type.startsWith('image')) {
-            } else if (file.type.startsWith('video')) {
+    addNewLayer = type => {
+        if (
+            this.state.currentSphere &&
+            document.getElementById('layerPath').files[0]
+        ) {
+            const file = document.getElementById('layerPath').files[0]
+            const reader = new FileReader()
+            const name = file.name
+            if (
+                !file.type.startsWith('image') &&
+                !file.type.startsWith('video')
+            ) {
+                alert('unsupported format')
+            } else {
+                reader.onload = e => {
+                    const color = new THREE.Color(
+                        `rgb(${document.getElementById('red').value}, ${
+                            document.getElementById('green').value
+                        }, ${document.getElementById('blue').value})`
+                    )
+                    if (type === 'front') {
+                        this.graph[this.state.currentSphere.name].layer.front[
+                            name
+                        ] = {
+                            data: e.target.result,
+                            used: -1,
+                            color: color
+                        }
+                    } else if (type === 'back') {
+                        this.graph[this.state.currentSphere.name].layer.back[
+                            name
+                        ] = {
+                            data: e.target.result,
+                            used: -1,
+                            color: color
+                        }
+                    }
+                    document.getElementById('layerPath').value = ''
+                    document.getElementById('red').value = ''
+                    document.getElementById('green').value = ''
+                    document.getElementById('blue').value = ''
+                }
+                reader.readAsDataURL(file)
             }
-            layerListCopy.push(e.target.result)
-            this.setState({ layerList: layerListCopy })
+        } else {
+            alert('sphere or file is missing')
         }
-        reader.readAsDataURL(file)
     }
 
     deleteLayer = () => {
-        const layerListCopy = this.state.stickerList
-        const pos = layerListCopy.indexOf(this.state.currentSticker)
-        layerListCopy.splice(pos, 1)
-        this.setState({
-            stickerList: layerListCopy
-        })
+        if (this.state.controls.showFront) {
+            const temp = []
+            for (const name in this.graph[this.state.currentSphere.name].layer
+                .front) {
+                if (
+                    this.graph[this.state.currentSphere.name].layer.front[name]
+                        .used !== -1
+                ) {
+                    temp.push(name)
+                    this.toggleLayer('front', name)
+                }
+            }
+            for (const item of temp) {
+                delete this.graph[this.state.currentSphere.name].layer.front[
+                    item
+                ]
+            }
+        } else if (this.state.controls.showBack) {
+            const temp = []
+            for (const name in this.graph[this.state.currentSphere.name].layer
+                .back) {
+                if (
+                    this.graph[this.state.currentSphere.name].layer.back[name]
+                        .used !== -1
+                ) {
+                    temp.push(name)
+                    this.toggleLayer('back', name)
+                }
+            }
+            for (const item of temp) {
+                delete this.graph[this.state.currentSphere.name].layer.front[
+                    item
+                ]
+            }
+        }
     }
+
+    toggleLayer = (type, name) => {
+        const layerListCopy = { ...this.state.layerList }
+        const length = this.state.layerList[type].length
+        const pos = this.state.layerList[type].indexOf(name)
+        if (pos === -1) {
+            // close -> open
+            const item = this.graph[this.state.currentSphere.name].layer[type][
+                name
+            ]
+            const geometry = new THREE.SphereGeometry(1, 32, 32)
+            let material
+            if (item.data.startsWith('data:image')) {
+                const texture = new THREE.TextureLoader().load(item.data)
+                texture.wrapS = THREE.RepeatWrapping
+                texture.repeat.x = -1
+                material = new THREE.MeshBasicMaterial({
+                    map: texture,
+                    side: THREE.BackSide,
+                    transparent: true,
+                    alphaTest: 0.7
+                })
+            } else if (item.data.startsWith('data:video')) {
+                material = new THREEx.ChromaKeyMaterial(item.data, item.color)
+                material.side = THREE.BackSide
+                material.transparent = true
+                const videoList = [...this.state.videoList, material]
+                this.setState({
+                    videoList: videoList
+                })
+            }
+            const sphere = new THREE.Mesh(geometry, material)
+            if (type === 'front') {
+                sphere.scale.setScalar(500 - 1 - length)
+            } else if (type === 'back') {
+                sphere.scale.setScalar(700 + length)
+            }
+            sphere.name = `sphere#${type}#${name}`
+            this.mainScene.add(sphere)
+            layerListCopy[type].push(name)
+            this.graph[this.state.currentSphere.name].layer[type][
+                name
+            ].used = length
+        } else {
+            //open -> close
+            const after = this.state.layerList[type].slice(pos + 1)
+            let removeObj
+            for (const obj of this.mainScene.children) {
+                if (obj.name === `sphere#${type}#${name}`) {
+                    removeObj = obj
+                } else if (after.indexOf(obj.name.split('#')[2]) !== -1) {
+                    const scale = obj.scale
+                    if (type === 'front') {
+                        obj.scale.setScalar(scale.x + 1)
+                    } else if (type === 'back') {
+                        obj.scale.setScalar(scale.x - 1)
+                    }
+                }
+            }
+            this.mainScene.remove(removeObj)
+            layerListCopy[type].splice(pos, 1)
+            this.graph[this.state.currentSphere.name].layer[type][
+                name
+            ].used = -1
+        }
+        this.setState({ layerList: layerListCopy })
+    }
+
+    removeLayerChangeScene = () => {
+        const layerListCopy = { ...this.state.layerList }
+        let temp = []
+        for (const obj of this.mainScene.children) {
+            if (obj.name.startsWith('sphere#')) {
+                temp.push(obj)
+            }
+        }
+        for (const item of temp) {
+            this.mainScene.remove(item)
+        }
+        layerListCopy.front = []
+        layerListCopy.back = []
+        this.setState({ layerList: layerListCopy })
+    }
+
+    addLayerChangeScene = (type, layer) => {
+        const layerListCopy = { ...this.state.layerList }
+        for (const name in layer) {
+            if (layer[name].used !== -1) {
+                const geometry = new THREE.SphereGeometry(1, 32, 32)
+                let material
+                if (layer[name].data.startsWith('data:image')) {
+                    const texture = new THREE.TextureLoader().load(
+                        layer[name].data
+                    )
+                    texture.wrapS = THREE.RepeatWrapping
+                    texture.repeat.x = -1
+                    material = new THREE.MeshBasicMaterial({
+                        map: texture,
+                        side: THREE.BackSide,
+                        transparent: true,
+                        alphaTest: 0.7
+                    })
+                } else if (layer[name].data.startsWith('data:video')) {
+                    material = new THREEx.ChromaKeyMaterial(
+                        layer[name].data,
+                        layer[name].color
+                    )
+                    material.side = THREE.BackSide
+                    material.transparent = true
+                    const videoList = [...this.state.videoList, material]
+                    this.setState({
+                        videoList: videoList
+                    })
+                }
+                const sphere = new THREE.Mesh(geometry, material)
+                if (type === 'front') {
+                    sphere.scale.setScalar(500 - 1 - layer[name].used)
+                } else if (type === 'back') {
+                    sphere.scale.setScalar(700 + layer[name].used)
+                }
+                sphere.name = `sphere#${type}#${name}`
+                this.mainScene.add(sphere)
+                layerListCopy[type].push(name)
+            }
+        }
+        this.setState({ layerList: layerListCopy })
+    }
+
+    getHelp = () => {}
 
     addingPoint = () => {
         const controlsCopy = { ...this.state.controls }
@@ -1636,47 +2031,72 @@ class App extends Component {
         }
     }
 
-    showSticker = () => {
+    showHelp = () => {
         const controlsCopy = { ...this.state.controls }
-        controlsCopy.showSticker = !this.state.controls.showSticker
-        controlsCopy.showLayer = false
+        controlsCopy.showHelp = !this.state.controls.showHelp
         this.setState({ controls: controlsCopy }, this.resizeWindow)
-        if (controlsCopy.showSticker) {
+        if (controlsCopy.showHelp) {
             document
-                .getElementById('plan')
-                .addEventListener('click', this.showSticker)
+                .getElementById('shader')
+                .addEventListener('click', this.showHelp)
             document
-                .getElementById('canvas')
-                .addEventListener('click', this.showSticker)
+                .getElementById('menu')
+                .addEventListener('click', this.showHelp)
         } else {
             document
-                .getElementById('plan')
-                .removeEventListener('click', this.showSticker)
+                .getElementById('shader')
+                .removeEventListener('click', this.showHelp)
             document
-                .getElementById('canvas')
-                .removeEventListener('click', this.showSticker)
+                .getElementById('menu')
+                .removeEventListener('click', this.showHelp)
         }
     }
 
-    showLayer = () => {
+    showBottom = type => {
         const controlsCopy = { ...this.state.controls }
-        controlsCopy.showLayer = !this.state.controls.showLayer
-        controlsCopy.showSticker = false
+        if (type === 'sticker') {
+            controlsCopy.showSticker = !this.state.controls.showSticker
+            controlsCopy.showFront = false
+            controlsCopy.showBack = false
+        } else if (type === 'front') {
+            controlsCopy.showSticker = false
+            controlsCopy.showFront = !this.state.controls.showFront
+            controlsCopy.showBack = false
+        } else if (type === 'back') {
+            controlsCopy.showSticker = false
+            controlsCopy.showFront = false
+            controlsCopy.showBack = !this.state.controls.showBack
+        } else {
+            controlsCopy.showSticker = false
+            controlsCopy.showFront = false
+            controlsCopy.showBack = false
+        }
+
         this.setState({ controls: controlsCopy }, this.resizeWindow)
-        if (controlsCopy.showLayer) {
+        if (
+            controlsCopy.showSticker ||
+            controlsCopy.showFront ||
+            controlsCopy.showBack
+        ) {
             document
                 .getElementById('plan')
-                .addEventListener('click', this.showLayer)
+                .addEventListener('click', this.showBottom)
             document
                 .getElementById('canvas')
-                .addEventListener('click', this.showLayer)
+                .addEventListener('click', this.showBottom)
+            document
+                .getElementById('menu')
+                .addEventListener('click', this.showBottom)
         } else {
             document
                 .getElementById('plan')
-                .removeEventListener('click', this.showLayer)
+                .removeEventListener('click', this.showBottom)
             document
                 .getElementById('canvas')
-                .removeEventListener('click', this.showLayer)
+                .removeEventListener('click', this.showBottom)
+            document
+                .getElementById('menu')
+                .removeEventListener('click', this.showBottom)
         }
     }
 
@@ -1699,6 +2119,7 @@ class App extends Component {
                             controls={this.state.controls}
                             mouseDown={this.onCanvasMouseDown}
                             doubleClick={this.onCanvasDoubleClick}
+                            videoList={this.state.videoList}
                         />
                         <PlanView
                             scene={this.planScene}
@@ -1718,7 +2139,8 @@ class App extends Component {
                         />
                         <Bottomtab
                             showSticker={this.state.controls.showSticker}
-                            showLayer={this.state.controls.showLayer}
+                            showFront={this.state.controls.showFront}
+                            showBack={this.state.controls.showBack}
                             getSticker={this.getSticker}
                             getLayer={this.getLayer}
                         />
@@ -1740,20 +2162,34 @@ class App extends Component {
                                     }
                                     showPlan={this.showPlan}
                                     showMap={this.showMap}
-                                    showSticker={this.showSticker}
-                                    showLayer={this.showLayer}
+                                    showSticker={() => {
+                                        this.showBottom('sticker')
+                                    }}
+                                    showFront={() => {
+                                        this.showBottom('front')
+                                    }}
+                                    showBack={() => {
+                                        this.showBottom('back')
+                                    }}
                                     websiteLink={this.state.websiteLink}
                                 />
                             )}
 
                         <Shader
-                            show={this.state.controls.showMap}
+                            show={
+                                this.state.controls.showMap ||
+                                this.state.controls.showHelp
+                            }
                             id="shader"
                         />
                         <Map
                             show={this.state.controls.showMap}
                             latitude={this.state.latitude}
                             longtitude={this.state.longtitude}
+                        />
+                        <Help
+                            show={this.state.controls.showHelp}
+                            getHelp={this.getHelp}
                         />
                     </CanvasDiv>
 

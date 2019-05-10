@@ -10,10 +10,6 @@ const FlexDiv = styled.div`
 class mainView extends Component {
     componentDidMount = () => {
         //setup
-        const graph = this.props.graph
-        const startingPoint = this.props.startingPoint
-
-        const scene = this.props.scene
         const camera = this.props.camera
         camera.position.set(0, 0, 0)
 
@@ -32,23 +28,6 @@ class mainView extends Component {
         controls.minDistance = 1
         controls.maxDistance = 100
         controls.target = new THREE.Vector3(-10, 0, 0)
-
-        if (startingPoint) {
-            const geometry = new THREE.SphereGeometry(500, 32, 32)
-            const texture = new THREE.TextureLoader().load(
-                graph[startingPoint].path
-            )
-            texture.wrapS = THREE.RepeatWrapping
-            texture.repeat.x = -1
-            const material = new THREE.MeshBasicMaterial({
-                map: texture,
-                side: THREE.BackSide
-            })
-            const sphere = new THREE.Mesh(geometry, material)
-            sphere.name = graph[startingPoint].name
-            sphere.floor = graph[startingPoint].floor
-            scene.add(sphere)
-        }
 
         this.scene = this.props.scene
         this.camera = this.props.camera
@@ -83,6 +62,12 @@ class mainView extends Component {
         this.updateComponent()
         this.frameId = window.requestAnimationFrame(this.animate)
         this.renderer.render(this.scene, this.camera)
+    }
+
+    updateVideo = () => {
+        for (const obj of this.props.videoList) {
+            obj.update()
+        }
     }
 
     updateComponent = () => {

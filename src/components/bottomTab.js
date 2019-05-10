@@ -1,44 +1,37 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
 
-const Bottom = styled.div`
+const OuterDiv = styled.div`
     position: absolute;
-    bottom: 5%;
-    display: flex;
-    flex-direction: row;
     right: 10%;
     left: 10%;
     top: 75%;
-    transition: right 1s, left 1s;
-    transition-timing-function: ease-in-out;
-    z-index: 5;
-    visibility: ${props => (props.show ? 'visible' : 'hidden')};
-`
-
-const OuterDiv = styled.div`
-    width: 100%;
-    height: 100%;
+    bottom: 5%;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
+    align-items: center;
     flex-direction: row;
     background-color: #212121;
     border-radius: 25px;
     border: 2px solid white;
-    overflow-x: scroll;
-    overflow-y: hidden;
+    z-index: 5;
+    overflow-x: auto;
+    visibility: ${props => (props.show ? 'visible' : 'hidden')};
 `
 
 class BottomTab extends Component {
     render = () => {
         return (
-            <Bottom show={this.props.showSticker || this.props.showLayer}>
-                {this.props.showSticker && (
-                    <OuterDiv>{this.props.getSticker()}</OuterDiv>
-                )}
-                {this.props.showLayer && (
-                    <OuterDiv>{this.props.getLayer()}</OuterDiv>
-                )}
-            </Bottom>
+            <OuterDiv
+                show={
+                    this.props.showSticker ||
+                    this.props.showFront ||
+                    this.props.showBack
+                }>
+                {this.props.showSticker && this.props.getSticker()}
+                {(this.props.showFront || this.props.showBack) &&
+                    this.props.getLayer()}
+            </OuterDiv>
         )
     }
 }

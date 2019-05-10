@@ -8,7 +8,8 @@ import {
     faSmile,
     faMapMarkerAlt,
     faHome,
-    faLayerGroup
+    faLayerGroup,
+    faCloudSun
 } from '@fortawesome/free-solid-svg-icons'
 
 const MenuDiv = styled.div`
@@ -193,7 +194,7 @@ class Menu extends Component {
                     </OuterDiv>
                     <OuterDiv
                         onClick={() => {
-                            this.props.showLayer()
+                            this.props.showFront()
                             this.open()
                         }}>
                         <StyledDiv>
@@ -207,6 +208,23 @@ class Menu extends Component {
                             />
                         </StyledDiv>
                         <Text>CHANGE LAYERS</Text>
+                    </OuterDiv>
+                    <OuterDiv
+                        onClick={() => {
+                            this.props.showBack()
+                            this.open()
+                        }}>
+                        <StyledDiv>
+                            <FontAwesomeIcon
+                                icon={faCloudSun}
+                                size="3x"
+                                color="white"
+                                style={{
+                                    margin: '0 auto'
+                                }}
+                            />
+                        </StyledDiv>
+                        <Text>CHANGE BG</Text>
                     </OuterDiv>
                     <OuterDiv
                         onClick={() => {
