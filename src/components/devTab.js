@@ -19,6 +19,10 @@ const Div = styled.div`
     flex-direction: column;
     overflow-y: ${props => (props.show ? '' : 'hidden')};
 `
+
+const Button = styled.button`
+    margin: 0 1rem;
+`
 const ScrollDiv = styled.div`
     visibility: ${props => (props.show ? 'visible' : 'hidden')};
     opacity: ${props => (props.show ? '1' : '0')};
@@ -41,27 +45,60 @@ class DevTab extends Component {
             saveState,
             deleteSticker,
             addLayer,
-            deleteLayer
+            deleteLayer,
+            changeState
         } = this.props
         return (
             <OuterDiv>
+                <Div show={!addingBox && !moving && !boxFirstPoint}>
+                    <h3>Link to website</h3>
+                    <span>
+                        <input id="url" type="type" />
+                        <Button
+                            onClick={() => {
+                                changeState('url')
+                            }}>
+                            change URL
+                        </Button>
+                    </span>
+                    <h3>Latitude</h3>
+                    <span>
+                        <input id="latitude" type="number" />
+                        <Button
+                            onClick={() => {
+                                changeState('lat')
+                            }}>
+                            change
+                        </Button>
+                    </span>
+                    <h3>Longtitude</h3>
+                    <span>
+                        <input id="longtitude" type="number" />
+                        <Button
+                            onClick={() => {
+                                changeState('long')
+                            }}>
+                            change
+                        </Button>
+                    </span>
+                </Div>
                 <Div show={!addingBox && !moving}>
                     <h3>Add new 360 picture to box</h3>
                     <span>
                         <input id="path" type="file" />
-                        <button onClick={addPoint}>add point</button>
+                        <Button onClick={addPoint}>add point</Button>
                     </span>
                 </Div>
                 <Div show={!addingBox && !moving && !boxFirstPoint}>
                     <h3>Delete existing 360 picture from box</h3>
-                    <button onClick={deletePoint}>delete point</button>
+                    <Button onClick={deletePoint}>delete point</Button>
                     <h3>Add new sticker to sticker list</h3>
                     <span>
                         <input id="stickerPath" type="file" />
-                        <button onClick={addSticker}>add sticker</button>
+                        <Button onClick={addSticker}>add sticker</Button>
                     </span>
                     <h3>Delete current sticker from list</h3>
-                    <button onClick={deleteSticker}>delete sticker</button>
+                    <Button onClick={deleteSticker}>delete sticker</Button>
                     <h3>Add new layer to this scene</h3>
                     <input id="layerPath" type="file" />
                     <p> chromakey color</p>
@@ -79,27 +116,27 @@ class DevTab extends Component {
                     </Div>
 
                     <span>
-                        <button
+                        <Button
                             onClick={() => {
                                 addLayer('front')
                             }}>
                             add layer front
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             onClick={() => {
                                 addLayer('back')
                             }}>
                             add layer back
-                        </button>
+                        </Button>
                     </span>
                     <h3>Delete current layer from scene</h3>
-                    <button onClick={deleteLayer}>delete layer</button>
+                    <Button onClick={deleteLayer}>delete layer</Button>
                     <h3>Create a new box</h3>
                 </Div>
                 <Div show={!moving && !boxFirstPoint}>
-                    <button onClick={addBox}>{`${
+                    <Button onClick={addBox}>{`${
                         addingBox ? 'cancel' : 'add box'
-                    }`}</button>
+                    }`}</Button>
                 </Div>
                 <ScrollDiv show={addingBox}>
                     <h3>New box parameters</h3>
@@ -132,12 +169,12 @@ class DevTab extends Component {
                         <span>
                             /asset/360/
                             <input id="boxFromDirectory" type="text" />
-                            <button
+                            <Button
                                 onClick={() => {
                                     createBox('directory')
                                 }}>
                                 create
-                            </button>
+                            </Button>
                         </span>
                     </div>
                     <h3>Modify each face</h3>
@@ -200,7 +237,8 @@ class DevTab extends Component {
                     />
                 </ScrollDiv>
                 <Div show={addingBox || moving}>
-                    <button onClick={moveBox}>finish</button>
+                    <h3>finish</h3>
+                    <Button onClick={moveBox}>finish</Button>
                 </Div>
                 <Div show={moving}>
                     <h3>rotate</h3>
@@ -218,7 +256,7 @@ class DevTab extends Component {
                 </Div>
                 <Div show={!addingBox && !moving && !boxFirstPoint}>
                     <h3>Save current state as json</h3>
-                    <button onClick={saveState}>save state</button>
+                    <Button onClick={saveState}>save state</Button>
                 </Div>
             </OuterDiv>
         )

@@ -3,6 +3,8 @@ import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronCircleRight } from '@fortawesome/free-solid-svg-icons'
 
+import { mobile } from '../mediaStyle'
+
 const DropDownMenu = styled.div`
     position: absolute;
     top: 0;
@@ -16,6 +18,13 @@ const DropDownMenu = styled.div`
     color: white;
     font-size: 1.2rem;
     border-left: 0.5rem solid white;
+
+    @media ${mobile} {
+        top: 3rem;
+        left: 0;
+        width: 10rem;
+        font-size: 1rem;
+    }
 `
 
 const DropDownItem = styled.div`
@@ -43,10 +52,19 @@ const ItemFlexDiv = styled.div`
 const NavigateP = styled.p`
     font-size: 2rem;
     margin: 1rem;
+
+    @media ${mobile} {
+        font-size: 1.5rem;
+        margin: 0.5rem;
+    }
 `
 
 const TextP = styled.p`
     margin: 1rem;
+
+    @media ${mobile} {
+        margin: 0.5rem;
+    }
 `
 
 class DropDown extends Component {

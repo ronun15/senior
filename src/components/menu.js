@@ -12,6 +12,8 @@ import {
     faCloudSun
 } from '@fortawesome/free-solid-svg-icons'
 
+import { mobile } from '../mediaStyle'
+
 const MenuDiv = styled.div`
     position: absolute;
     display: flex;
@@ -23,6 +25,14 @@ const MenuDiv = styled.div`
     transition: left 0.5s, right 0.5s;
     transition-timing-function: ease-in-out;
     z-index: 4;
+
+    @media ${mobile} {
+        right: 0;
+        left: 0;
+        bottom: ${props => (props.open ? '0' : 'calc(100% - 3rem)')};
+        transition: top 0.5s, bottom 0.5s;
+        flex-direction: column-reverse;
+    }
 `
 
 const MenuOpener = styled.div`
@@ -32,6 +42,14 @@ const MenuOpener = styled.div`
     background-color: #000000;
     padding: 1rem 0;
     display: flex;
+
+    @media ${mobile} {
+        width: 100%;
+        height: 2rem;
+        justify-content: center;
+        padding: 0.5rem 0;
+        font-size: 1.5rem;
+    }
 `
 
 const MenuButton = styled.div`
@@ -40,9 +58,13 @@ const MenuButton = styled.div`
     display: flex;
     flex-direction: column;
     background-color: #212121;
-    font-size: 2em;
     color: white;
     text-align: center;
+
+    @media ${mobile} {
+        width: 100%;
+        height: calc(100% - 3rem);
+    }
 `
 
 const OuterDiv = styled.div`
@@ -54,6 +76,13 @@ const OuterDiv = styled.div`
     font-size: 2rem;
     border-bottom: 0.2em solid black;
     cursor: pointer;
+
+    @media ${mobile} {
+        border-bottom: ${props =>
+            props.open ? '0.2em solid black' : '0px solid black'};
+        transition: border-bottom-width 0.5s;
+        font-size: 1.5rem;
+    }
 `
 
 const StyledDiv = styled.div`
@@ -67,7 +96,7 @@ const StyledDiv = styled.div`
 const Text = styled.p`
     margin: 0
     width: calc(60% - 2em);
-    margin: auto 1em;
+    margin: auto 1rem;
 `
 
 class Menu extends Component {
@@ -125,6 +154,7 @@ class Menu extends Component {
                 </MenuOpener>
                 <MenuButton>
                     <OuterDiv
+                        open={this.state.open && this.props.canOpen}
                         onClick={() => {
                             this.openlink()
                             this.open()
@@ -142,6 +172,7 @@ class Menu extends Component {
                         <Text>ABOUT</Text>
                     </OuterDiv>
                     <OuterDiv
+                        open={this.state.open && this.props.canOpen}
                         onClick={() => {
                             this.props.showMap()
                             this.open()
@@ -159,6 +190,7 @@ class Menu extends Component {
                         <Text>GOOGLE MAPS</Text>
                     </OuterDiv>
                     <OuterDiv
+                        open={this.state.open && this.props.canOpen}
                         onClick={() => {
                             this.props.showPlan()
                             this.open()
@@ -176,6 +208,7 @@ class Menu extends Component {
                         <Text>FLOOR PLAN</Text>
                     </OuterDiv>
                     <OuterDiv
+                        open={this.state.open && this.props.canOpen}
                         onClick={() => {
                             this.props.showSticker()
                             this.open()
@@ -193,6 +226,7 @@ class Menu extends Component {
                         <Text>CHANGE STICKERS</Text>
                     </OuterDiv>
                     <OuterDiv
+                        open={this.state.open && this.props.canOpen}
                         onClick={() => {
                             this.props.showFront()
                             this.open()
@@ -210,6 +244,7 @@ class Menu extends Component {
                         <Text>CHANGE LAYERS</Text>
                     </OuterDiv>
                     <OuterDiv
+                        open={this.state.open && this.props.canOpen}
                         onClick={() => {
                             this.props.showBack()
                             this.open()
@@ -227,6 +262,7 @@ class Menu extends Component {
                         <Text>CHANGE BG</Text>
                     </OuterDiv>
                     <OuterDiv
+                        open={this.state.open && this.props.canOpen}
                         onClick={() => {
                             this.open()
                         }}>

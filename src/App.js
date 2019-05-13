@@ -73,6 +73,9 @@ class App extends Component {
 
         this.state = {
             env: 'dev',
+            width: document.documentElement.clientWidth,
+            height: document.documentElement.clientHeight,
+            reload: true,
             latitude: 0,
             longtitude: 0,
             loading: true,
@@ -241,12 +244,15 @@ class App extends Component {
 
         window.addEventListener('resize', this.resizeWindow)
         window.addEventListener('mousemove', this.onMouseMove)
-        this.resizeWindow()
 
         this.start()
-        await this.setState({
-            loading: false
-        })
+        await this.setState(
+            {
+                loading: false
+            },
+
+            this.resizeWindow
+        )
     }
 
     componentWillUnmount = () => {
@@ -327,19 +333,13 @@ class App extends Component {
         let query = new URLSearchParams(window.location.search)
         if (query.has('env')) {
             const env = query.get('env')
-            this.setState(
-                {
-                    env: env
-                },
-                this.resizeWindow
-            )
+            this.setState({
+                env: env
+            })
         } else {
-            this.setState(
-                {
-                    env: ''
-                },
-                this.resizeWindow
-            )
+            this.setState({
+                env: ''
+            })
         }
         if (query.has('input')) {
             const file = query.get('input')
@@ -361,34 +361,45 @@ class App extends Component {
     }
 
     resizeWindow = () => {
-        const mainStateCopy = { ...this.state.mainState }
-        mainStateCopy.width =
-            this.state.env === 'dev'
-                ? 0.8 * document.documentElement.clientWidth
-                : document.documentElement.clientWidth
+        this.setState(
+            {
+                width: document.documentElement.clientWidth,
+                height: document.documentElement.clientHeight
+            },
+            () => {
+                const mainStateCopy = { ...this.state.mainState }
+                mainStateCopy.width =
+                    this.state.env === 'dev'
+                        ? 0.8 * this.state.width
+                        : this.state.width
 
-        const planStateCopy = { ...this.state.planState }
-        planStateCopy.width =
-            this.state.env === 'dev'
-                ? 0.8 * document.documentElement.clientWidth
-                : document.documentElement.clientWidth
+                const planStateCopy = { ...this.state.planState }
+                planStateCopy.width =
+                    this.state.env === 'dev'
+                        ? 0.8 * this.state.width
+                        : this.state.width
 
-        if (
-            this.state.controls.addingBox ||
-            this.state.controls.moving ||
-            this.state.controls.boxFirstPoint
-        ) {
-            mainStateCopy.height = 0
-            planStateCopy.height = document.documentElement.clientHeight
-        } else if (this.state.controls.showPlan) {
-            mainStateCopy.height = 0.6 * document.documentElement.clientHeight
-            planStateCopy.height = 0.4 * document.documentElement.clientHeight
-        } else {
-            mainStateCopy.height = document.documentElement.clientHeight
-            planStateCopy.height = 0
-        }
+                if (
+                    this.state.controls.addingBox ||
+                    this.state.controls.moving ||
+                    this.state.controls.boxFirstPoint
+                ) {
+                    mainStateCopy.height = 0
+                    planStateCopy.height = this.state.height
+                } else if (this.state.controls.showPlan) {
+                    mainStateCopy.height = 0.6 * this.state.height
+                    planStateCopy.height = 0.4 * this.state.height
+                } else {
+                    mainStateCopy.height = this.state.height
+                    planStateCopy.height = 0
+                }
 
-        this.setState({ mainState: mainStateCopy, planState: planStateCopy })
+                this.setState({
+                    mainState: mainStateCopy,
+                    planState: planStateCopy
+                })
+            }
+        )
     }
 
     onMouseMove = event => {
@@ -1817,6 +1828,8 @@ class App extends Component {
                     document.getElementById('red').value = ''
                     document.getElementById('green').value = ''
                     document.getElementById('blue').value = ''
+
+                    this.setState(state => ({ reload: !state.reload }))
                 }
                 reader.readAsDataURL(file)
             }
@@ -1861,6 +1874,7 @@ class App extends Component {
                 ]
             }
         }
+        this.setState(state => ({ reload: !state.reload }))
     }
 
     toggleLayer = (type, name) => {
@@ -2100,10 +2114,43 @@ class App extends Component {
         }
     }
 
+    changeState = state => {
+        if (state === 'url') {
+            this.setState(
+                {
+                    websiteLink: document.getElementById('url').value
+                },
+                () => {
+                    document.getElementById('url').value = ''
+                }
+            )
+        } else if (state === 'lat') {
+            this.setState(
+                {
+                    latitude: Number(document.getElementById('latitude').value)
+                },
+                () => {
+                    document.getElementById('latitude').value = ''
+                }
+            )
+        } else if (state === 'long') {
+            this.setState(
+                {
+                    longtitude: Number(
+                        document.getElementById('longtitude').value
+                    )
+                },
+                () => {
+                    document.getElementById('longtitude').value = ''
+                }
+            )
+        }
+    }
+
     render = () => {
         if (!this.state.loading) {
             return (
-                <MainDiv controls={this.state.controls}>
+                <MainDiv id="mainDiv" controls={this.state.controls}>
                     <CanvasDiv id="canvasDiv" env={this.state.env}>
                         <MainView
                             scene={this.mainScene}
@@ -2206,6 +2253,7 @@ class App extends Component {
                             saveState={this.saveState}
                             addLayer={this.addNewLayer}
                             deleteLayer={this.deleteLayer}
+                            changeState={this.changeState}
                         />
                     )}
                 </MainDiv>
