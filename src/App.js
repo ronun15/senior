@@ -49,7 +49,7 @@ const BottomVideo = styled.video`
 const Shader = styled.div`
     width: 100%;
     height: 100%;
-    z-index: 2;
+    z-index: ${props => (props.show ? 2 : -1)};
     position: absolute;
     background-color: #463d4c;
     opacity: 0.5;
@@ -115,6 +115,9 @@ class App extends Component {
 
     componentDidMount = async () => {
         const data = await this.getData()
+        if (data === undefined) {
+            return
+        }
         console.log(data.graph)
         this.setState({
             latitude: data.latitude,
@@ -343,9 +346,14 @@ class App extends Component {
         }
         if (query.has('input')) {
             const file = query.get('input')
-            const output = require(`../data/${file}`)
-            output.load = true
-            return output
+            try {
+                const output = require(`../data/${file}`)
+                output.load = true
+                return output
+            } catch (e) {
+                console.log(e)
+                alert(`can not find ${file}\n${e}`)
+            }
         } else {
             return {
                 graph: {},
@@ -490,6 +498,11 @@ class App extends Component {
                         const pos = this.graph[name].edge.indexOf(item)
                         this.graph[name].edge.splice(pos, 1)
                     }
+                }
+                if (path === this.state.startingPoint) {
+                    this.setState({
+                        startingPoint: this.state.currentSphere.name
+                    })
                 }
 
                 delete this.graph[path]
@@ -1605,7 +1618,7 @@ class App extends Component {
                 map: texture,
                 side: THREE.FrontSide,
                 transparent: true,
-                alphaTest: 0.3
+                alphaTest: 0.5
             })
             const sticker = new THREE.Mesh(geometry, material)
             sticker.position.copy(normal.multiplyScalar(450))
@@ -1807,13 +1820,17 @@ class App extends Component {
                             document.getElementById('green').value
                         }, ${document.getElementById('blue').value})`
                     )
+                    const alpha = parseFloat(
+                        document.getElementById('alpha').value
+                    )
                     if (type === 'front') {
                         this.graph[this.state.currentSphere.name].layer.front[
                             name
                         ] = {
                             data: e.target.result,
                             used: -1,
-                            color: color
+                            color: color,
+                            alpha: alpha
                         }
                     } else if (type === 'back') {
                         this.graph[this.state.currentSphere.name].layer.back[
@@ -1821,13 +1838,15 @@ class App extends Component {
                         ] = {
                             data: e.target.result,
                             used: -1,
-                            color: color
+                            color: color,
+                            alpha: alpha
                         }
                     }
                     document.getElementById('layerPath').value = ''
                     document.getElementById('red').value = ''
                     document.getElementById('green').value = ''
                     document.getElementById('blue').value = ''
+                    document.getElementById('alpha').value = ''
 
                     this.setState(state => ({ reload: !state.reload }))
                 }
@@ -1896,10 +1915,14 @@ class App extends Component {
                     map: texture,
                     side: THREE.BackSide,
                     transparent: true,
-                    alphaTest: 0.7
+                    alphaTest: 0.5
                 })
             } else if (item.data.startsWith('data:video')) {
-                material = new THREEx.ChromaKeyMaterial(item.data, item.color)
+                material = new THREEx.ChromaKeyMaterial(
+                    item.data,
+                    item.color,
+                    item.alpha
+                )
                 material.side = THREE.BackSide
                 material.transparent = true
                 const videoList = [...this.state.videoList, material]
@@ -2003,8 +2026,6 @@ class App extends Component {
         }
         this.setState({ layerList: layerListCopy })
     }
-
-    getHelp = () => {}
 
     addingPoint = () => {
         const controlsCopy = { ...this.state.controls }
@@ -2218,6 +2239,7 @@ class App extends Component {
                                     showBack={() => {
                                         this.showBottom('back')
                                     }}
+                                    showHelp={this.showHelp}
                                     websiteLink={this.state.websiteLink}
                                 />
                             )}
@@ -2234,10 +2256,7 @@ class App extends Component {
                             latitude={this.state.latitude}
                             longtitude={this.state.longtitude}
                         />
-                        <Help
-                            show={this.state.controls.showHelp}
-                            getHelp={this.getHelp}
-                        />
+                        <Help show={this.state.controls.showHelp} />
                     </CanvasDiv>
 
                     {this.state.env === 'dev' && (

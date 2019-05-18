@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 const THREEx = {}
 
-THREEx.ChromaKeyMaterial = function(url, color) {
+THREEx.ChromaKeyMaterial = function(url, color, alpha) {
     THREE.ShaderMaterial.call(this)
 
     const video = document.createElement('video')
@@ -43,6 +43,9 @@ THREEx.ChromaKeyMaterial = function(url, color) {
             color: {
                 type: 'c',
                 value: keyColorObject
+            },
+            alpha: {
+                value: alpha
             }
         },
         vertexShader:
@@ -56,12 +59,13 @@ THREEx.ChromaKeyMaterial = function(url, color) {
         fragmentShader:
             'uniform mediump sampler2D texture;\n' +
             'uniform mediump vec3 color;\n' +
+            'uniform mediump float alpha;\n' +
             'varying mediump vec2 vUv;\n' +
             'void main(void)\n' +
             '{\n' +
             '  mediump vec3 tColor = texture2D( texture, vUv ).rgb;\n' +
             '  mediump float a = (length(tColor - color) - 0.5) * 7.0;\n' +
-            '  gl_FragColor = vec4(tColor, a);\n' +
+            '  gl_FragColor = vec4(tColor, min(a,1.0) * alpha);\n' +
             '}',
         transparent: true
     })

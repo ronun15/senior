@@ -264,6 +264,7 @@ class Menu extends Component {
                     <OuterDiv
                         open={this.state.open && this.props.canOpen}
                         onClick={() => {
+                            this.props.showHelp()
                             this.open()
                         }}>
                         <StyledDiv>

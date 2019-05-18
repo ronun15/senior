@@ -114,6 +114,10 @@ class DevTab extends Component {
                         b
                         <input id="blue" type="number" max="255" min="0" />
                     </Div>
+                    <Div show={!addingBox && !moving && !boxFirstPoint}>
+                        alpha
+                        <input id="alpha" type="number" max="1" min="0" step='0.1' />
+                    </Div>
 
                     <span>
                         <Button

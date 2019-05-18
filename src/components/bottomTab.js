@@ -14,7 +14,7 @@ const OuterDiv = styled.div`
     background-color: #212121;
     border-radius: 25px;
     border: 2px solid white;
-    z-index: 5;
+    z-index: ${props => (props.show ? 5 : -1)};
     overflow-x: auto;
     visibility: ${props => (props.show ? 'visible' : 'hidden')};
 `

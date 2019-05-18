@@ -5,7 +5,7 @@ import styled from 'styled-components'
 const GoogleMapDiv = styled.div`
     width: 80%;
     height: 80%;
-    z-index: 3;
+    z-index: ${props => (props.show ? 3 : -1)};
     position: absolute;
     top: 10%;
     left: 10%;
