@@ -1815,11 +1815,11 @@ class App extends Component {
                 alert('unsupported format')
             } else {
                 reader.onload = e => {
-                    const color = new THREE.Color(
-                        `rgb(${document.getElementById('red').value}, ${
-                            document.getElementById('green').value
-                        }, ${document.getElementById('blue').value})`
-                    )
+                    const color = `rgb(${
+                        document.getElementById('red').value
+                    }, ${document.getElementById('green').value}, ${
+                        document.getElementById('blue').value
+                    })`
                     const alpha = parseFloat(
                         document.getElementById('alpha').value
                     )
@@ -1888,7 +1888,7 @@ class App extends Component {
                 }
             }
             for (const item of temp) {
-                delete this.graph[this.state.currentSphere.name].layer.front[
+                delete this.graph[this.state.currentSphere.name].layer.back[
                     item
                 ]
             }
@@ -1938,10 +1938,10 @@ class App extends Component {
             }
             sphere.name = `sphere#${type}#${name}`
             this.mainScene.add(sphere)
-            layerListCopy[type].push(name)
             this.graph[this.state.currentSphere.name].layer[type][
                 name
             ].used = length
+            layerListCopy[type].push(name)
         } else {
             //open -> close
             const after = this.state.layerList[type].slice(pos + 1)
@@ -2004,7 +2004,8 @@ class App extends Component {
                 } else if (layer[name].data.startsWith('data:video')) {
                     material = new THREEx.ChromaKeyMaterial(
                         layer[name].data,
-                        layer[name].color
+                        layer[name].color,
+                        layer[name].alpha
                     )
                     material.side = THREE.BackSide
                     material.transparent = true

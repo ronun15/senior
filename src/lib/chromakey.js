@@ -3,7 +3,6 @@ const THREEx = {}
 
 THREEx.ChromaKeyMaterial = function(url, color, alpha) {
     THREE.ShaderMaterial.call(this)
-
     const video = document.createElement('video')
     video.src = url
     video.crossOrigin = 'anonymous'
@@ -12,7 +11,7 @@ THREEx.ChromaKeyMaterial = function(url, color, alpha) {
     video.setAttribute('webkit-playsinline', 'webkit-playsinline')
     video.play()
 
-    var keyColorObject = color
+    var keyColorObject = new THREE.Color(color)
 
     var videoTexture = new THREE.VideoTexture(video)
     videoTexture.minFilter = THREE.LinearFilter
@@ -65,6 +64,7 @@ THREEx.ChromaKeyMaterial = function(url, color, alpha) {
             '{\n' +
             '  mediump vec3 tColor = texture2D( texture, vUv ).rgb;\n' +
             '  mediump float a = (length(tColor - color) - 0.5) * 7.0;\n' +
+            '  if(a<0.0) discard;\n' +
             '  gl_FragColor = vec4(tColor, min(a,1.0) * alpha);\n' +
             '}',
         transparent: true
