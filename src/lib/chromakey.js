@@ -16,7 +16,8 @@ THREEx.ChromaKeyMaterial = function(url, color, alpha) {
     var videoTexture = new THREE.VideoTexture(video)
     videoTexture.minFilter = THREE.LinearFilter
     videoTexture.magFilter = THREE.LinearFilter
-    videoTexture.wrapS = THREE.RepeatWrapping
+    videoTexture.wrapS = THREE.ClampToEdgeWrapping
+    videoTexture.wrapT = THREE.ClampToEdgeWrapping
     videoTexture.repeat.x = -1
 
     this.stopVideo = function() {
@@ -71,8 +72,6 @@ THREEx.ChromaKeyMaterial = function(url, color, alpha) {
     })
 }
 
-THREEx.ChromaKeyMaterial.prototype = Object.create(
-    THREE.ShaderMaterial.prototype
-)
+THREEx.ChromaKeyMaterial.prototype = Object.create(THREE.ShaderMaterial.prototype)
 
 export default THREEx

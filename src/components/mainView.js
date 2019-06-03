@@ -34,7 +34,6 @@ class mainView extends Component {
         this.renderer = this.props.renderer
         this.controls = this.props.orbitControls
         this.mouse = this.props.mouse
-        this.raycaster = this.props.raycaster
         this.defaultFOV = (55 * Math.PI) / 180
         this.zoomSpeed = 0.03
         this.zoomFactor = 1

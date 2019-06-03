@@ -53,7 +53,6 @@ class planView extends Component {
         this.renderer = this.props.renderer
         this.controls = this.props.orbitControls
         this.mouse = this.props.mouse
-        this.raycaster = this.props.raycaster
 
         this.mount.appendChild(this.renderer.domElement)
         this.start()

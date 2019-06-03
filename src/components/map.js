@@ -18,7 +18,7 @@ class Map extends Component {
     render = () => {
         return (
             <GoogleMapDiv show={this.props.show} env={this.props.env}>
-                <LoadScript id="scriptLoader" googleMapsApiKey="insert key">
+                <LoadScript id="scriptLoader" googleMapsApiKey="AIzaSyDghvjbWkTHJk2VPocesmhy41io2uDEbGU">
                     <GoogleMap
                         id="googleMap"
                         mapContainerStyle={{

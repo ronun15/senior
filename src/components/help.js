@@ -1,12 +1,52 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-    faChevronLeft,
-    faChevronRight
-} from '@fortawesome/free-solid-svg-icons'
+import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons'
 
 import { mobile } from '../mediaStyle'
+
+const text1 = `Controls
+
+    - Left Click and Drag - rotate the camera
+    - Mousewhell - zoom in/out
+    - Double Click - add/remove a sticker
+`
+
+const text2 = `Menu
+
+    - About -
+The project website.
+
+    - Google Maps -
+The project location.
+
+    - Floor Plan -
+View the project room in 3D. Looking above will results in a floor plan.
+
+    - Change Sticker -
+Change the currently active sticker. You can place it on the scene by double clicking.
+
+    - Change Layers -
+Change the layers that are showing on top of the room.
+
+    - Change BG -
+Change the background that are showing outside of the room.
+
+    - Help -
+Show Help.
+`
+
+const text3 = `Floor Plan
+
+    You can view the layout of the house in 3D with the yellow dot showing the current location.
+
+Controls
+
+    - Left Click and Drag - rotate the camera
+    - Right Click and Drag - translate the camera
+    - Mousewhell - zoom in/out
+    - Double Click - move to the closest location to the click
+`
 
 const HelpDiv = styled.div`
     background-color: #212121;
@@ -53,9 +93,10 @@ const Img = styled.img`
 `
 
 const P = styled.p`
-    margin: 1rem auto;
+    margin: 1rem;
     font-size: 2rem;
     color: white;
+    white-space: pre-wrap;
 
     @media ${mobile} {
         font-size: 1rem;
@@ -68,14 +109,8 @@ class Help extends Component {
 
         this.state = {
             index: 0,
-            img: [
-                'https://previews.123rf.com/images/mdorottya/mdorottya1410/mdorottya141000012/32805665-happy-little-orange-havanese-puppy-dog-is-sitting-in-the-grass.jpg',
-                'https://www.opencollege.info/wp-content/uploads/2016/06/buying-a-new-puppy-dog.jpg'
-            ],
-            text: [
-                'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi nec lacus suscipit, congue neque sed, efficitur nulla. Curabitur vel dapibus libero. Nullam vestibulum justo mi, vel aliquam ipsum lacinia et. Nullam tincidunt mauris id justo aliquet maximus. Curabitur ut dolor non augue dignissim imperdiet eget at enim. Nulla placerat arcu vitae neque hendrerit, in tempor neque accumsan. Donec ullamcorper sed enim vitae fringilla. Vivamus sed ex quis enim vehicula auctor in et nunc. Sed vel convallis ante. Quisque id tempor ipsum, quis iaculis nulla. Sed gravida id dolor eu laoreet. Donec maximus tempor eros a vestibulum. Duis ut aliquam nibh.',
-                'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi nec lacus suscipit, congue neque sed, efficitur nulla. Curabitur vel dapibus libero. Nullam vestibulum justo mi, vel aliquam ipsum lacinia et. Nullam tincidunt mauris id justo aliquet maximus. Curabitur ut dolor non augue dignissim imperdiet eget at enim. Nulla placerat arcu vitae neque hendrerit, in tempor neque accumsan. Donec ullamcorper sed enim vitae fringilla. Vivamus sed ex quis enim vehicula auctor in et nunc. Sed vel convallis ante. Quisque id tempor ipsum, quis iaculis nulla. Sed gravida id dolor eu laoreet. Donec maximus tempor eros a vestibulum. Duis ut aliquam nibh.'
-            ]
+            img: ['./img/img1.JPG', './img/img2.JPG', './img/img3.JPG'],
+            text: [text1, text2, text3]
         }
     }
 
@@ -106,18 +141,11 @@ class Help extends Component {
                     />
                 </ArrowDiv>
                 <ContentDiv>
-                    <Img
-                        src={this.state.img[this.state.index]}
-                        alt={this.state.text[this.state.index]}
-                    />
+                    <Img src={this.state.img[this.state.index]} alt={this.state.text[this.state.index]} />
 
                     <P>{this.state.text[this.state.index]}</P>
                 </ContentDiv>
-                <ArrowDiv
-                    show={
-                        this.state.index !== this.state.img.length - 1 &&
-                        this.props.show
-                    }>
+                <ArrowDiv show={this.state.index !== this.state.img.length - 1 && this.props.show}>
                     <FontAwesomeIcon
                         icon={faChevronRight}
                         size="3x"
